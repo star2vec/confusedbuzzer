@@ -2,14 +2,18 @@
 
 Answers are re-scored from their text with the current score.py (the fields stored at generation time are
 overwritten). Reads results/s1/{labeled,neutral}_{tag}.jsonl for every model tag present and writes results/s1/summary.md, plus
-results/s1/samples_{tag}.md with 30 random answers for a manual read of the scorer. The next-word check
-(nextword_*.jsonl) is not read. Primary label = method stated in the text (approach_text); secondary = final
-number (approach_number). Rates are reported side by side; there are no thresholds here.
+results/s1/samples_{tag}.md with 30 random answers for a manual read of the scorer. For the 3B it also writes
+results/s1/read_neutral_qwen3b.md (every neutral answer) and read_labeled_qwen3b.md (60 labeled answers) for
+hand reading. The next-word check (nextword_*.jsonl) is not read. Primary label = final number (approach_number: 1/3 A, 1/2 B, 1/4 C); the method
+stated in the text (approach_text) is kept as a check next to it. Rates are reported side by side; there are no
+thresholds here.
 
 Per model: labeled accuracy (all / non-canonical wordings / canonical / held-out splits), labeled x answered
-confusion, text/number agreement, neutral approach distribution per wording, and two variation readings:
-across wordings (chi-square statistic on wording x {A,B,C} counts with a permutation p-value) and across samples
-(majority share within a wording, next to what iid draws from the pooled mix would give).
+confusion, text/number agreement, neutral approach distribution per wording (with the samples that end in a
+canonical number but state no method), and two variation readings on the number label: across wordings (does the
+mix of approaches differ between wordings more than it does when the labels are shuffled across wordings) and
+across samples (how often samples of one wording land on the same approach, next to what independent draws from
+the pooled mix would give).
 """
 import random
 from collections import Counter, defaultdict
@@ -24,6 +28,8 @@ S1 = RESULTS / "s1"
 TEXT_LABELS = ["A", "B", "C", "multiple", "none"]
 NUM_LABELS = ["A", "B", "C", "other", "multiple", "none"]
 N_PERM = 5000
+READ_TAGS = ["qwen3b"]  # models whose answers get hand-reading files (read_{neutral,labeled}_{tag}.md)
+N_READ_LABELED = 60
 
 
 def md_table(header, rows):
@@ -51,11 +57,11 @@ def load(tag):
     return meta, data
 
 
-def acc(rows, key="approach_text"):
+def acc(rows, key="approach_number"):
     return pct(sum(r[key] == r["approach"] for r in rows), len(rows))
 
 
-def dist_str(rows, key="approach_text"):
+def dist_str(rows, key="approach_number"):
     labels = TEXT_LABELS if key == "approach_text" else NUM_LABELS
     c = Counter(r[key] for r in rows)
     return " ".join(f"{x}:{c[x]}" for x in labels if c[x]) or "–"
@@ -70,16 +76,17 @@ def chi2_stat(table):
     return float(term.sum())
 
 
-def across_wordings(N):
-    """Chi-square statistic on wording x {A,B,C} counts (text label), p-value by permuting labels across wordings."""
-    rows = [r for r in N if r["approach_text"] in APPROACHES]
+def across_wordings(N, key="approach_number"):
+    """Spread of the wording x {A,B,C} counts (chi-square statistic) and the share of label shufflings across
+    wordings that spread at least as much."""
+    rows = [r for r in N if r[key] in APPROACHES]
     wids = sorted({r["wording_id"] for r in rows})
-    if len(wids) < 2 or len({r["approach_text"] for r in rows}) < 2:
+    if len(wids) < 2 or len({r[key] for r in rows}) < 2:
         return None
     widx = {w: i for i, w in enumerate(wids)}
     aidx = {a: i for i, a in enumerate(APPROACHES)}
     w = np.array([widx[r["wording_id"]] for r in rows])
-    a = np.array([aidx[r["approach_text"]] for r in rows])
+    a = np.array([aidx[r[key]] for r in rows])
 
     def table(a_):
         t = np.zeros((len(wids), 3))
@@ -93,12 +100,12 @@ def across_wordings(N):
     return dict(chi2=obs, df=df, p_perm=float((perm >= obs - 1e-9).mean()), n=len(rows), n_wordings=len(wids))
 
 
-def across_samples(N):
+def across_samples(N, key="approach_number"):
     """Within-wording majority share among A/B/C-labeled samples, next to iid draws from the pooled mix."""
     by = defaultdict(list)
     for r in N:
-        if r["approach_text"] in APPROACHES:
-            by[r["wording_id"]].append(r["approach_text"])
+        if r[key] in APPROACHES:
+            by[r["wording_id"]].append(r[key])
     groups = [v for v in by.values() if len(v) >= 2]
     if not groups:
         return None
@@ -125,23 +132,23 @@ def section(tag, meta, data):
                         f"n={len(data[k])} answers")
     out += ["Runs: " + "; ".join(runs) if runs else "No runs found.", ""]
 
-    # 1. side by side: labeled follow rate next to neutral share, text label first, number label second
+    # 1. side by side: labeled follow rate next to neutral share, number label first, stated method as a check
     rows = []
     for a in APPROACHES:
         la = [r for r in L if r["approach"] == a]
         rows.append([APPROACH_LABEL[a],
-                     pct(sum(r["approach_text"] == a for r in la), len(la)), pct(sum(r["approach_text"] == a for r in N), len(N)),
-                     pct(sum(r["approach_number"] == a for r in la), len(la)), pct(sum(r["approach_number"] == a for r in N), len(N))])
+                     pct(sum(r["approach_number"] == a for r in la), len(la)), pct(sum(r["approach_number"] == a for r in N), len(N)),
+                     pct(sum(r["approach_text"] == a for r in la), len(la)), pct(sum(r["approach_text"] == a for r in N), len(N))])
     ct, cn = Counter(r["approach_text"] for r in L), Counter(r["approach_text"] for r in N)
     kt, kn = Counter(r["approach_number"] for r in L), Counter(r["approach_number"] for r in N)
-    for o in ["multiple", "none", "other"]:
-        rows.append([o, pct(ct[o], len(L)) if o != "other" else "", pct(cn[o], len(N)) if o != "other" else "",
-                     pct(kt[o], len(L)), pct(kn[o], len(N))])
-    out += ["### Approach rates (text label primary, number label secondary)", "",
+    for o in ["other", "multiple", "none"]:
+        rows.append([o, pct(kt[o], len(L)), pct(kn[o], len(N)),
+                     pct(ct[o], len(L)) if o != "other" else "", pct(cn[o], len(N)) if o != "other" else ""])
+    out += ["### Approach rates (final number primary, stated method as a check)", "",
             "Labeled columns: share of answers to prompts labeled with that approach whose label is that approach. "
-            "Neutral columns: share of all neutral samples with that label. multiple/none/other rows are shares of all "
+            "Neutral columns: share of all neutral samples with that label. other/multiple/none rows are shares of all "
             "labeled answers / all neutral samples.", "",
-            md_table(["approach", "labeled, text", "neutral, text", "labeled, number", "neutral, number"], rows), ""]
+            md_table(["approach", "labeled, number", "neutral, number", "labeled, stated (check)", "neutral, stated (check)"], rows), ""]
 
     if L:
         subsets = [("all wordings", L), ("non-canonical wordings (id != 0)", [r for r in L if r["wording_id"] != 0]),
@@ -149,42 +156,45 @@ def section(tag, meta, data):
                    ("held-out wordings", [r for r in L if r["heldout_wording"]]),
                    ("held-out descriptions", [r for r in L if r["heldout_desc"]]),
                    ("held-out wording and description", [r for r in L if r["heldout_wording"] and r["heldout_desc"]])]
-        rows = [[name, len(rs), acc(rs, "approach_text"), acc(rs, "approach_number")] for name, rs in subsets]
-        out += ["### Labeled accuracy (answer label = labeled approach)", "", md_table(["subset", "n", "text", "number"], rows), ""]
+        rows = [[name, len(rs), acc(rs, "approach_number"), acc(rs, "approach_text")] for name, rs in subsets]
+        out += ["### Labeled accuracy (answer label = labeled approach)", "",
+                md_table(["subset", "n", "number", "stated (check)"], rows), ""]
 
-        rows = [[APPROACH_LABEL[a], len(la)] + [Counter(r["approach_text"] for r in la)[x] for x in TEXT_LABELS]
-                for a in APPROACHES for la in [[r for r in L if r["approach"] == a]]]
-        out += ["### Labeled approach × stated method (text label)", "", md_table(["labeled", "n"] + TEXT_LABELS, rows), ""]
         rows = [[APPROACH_LABEL[a], len(la)] + [Counter(r["approach_number"] for r in la)[x] for x in NUM_LABELS]
                 for a in APPROACHES for la in [[r for r in L if r["approach"] == a]]]
         out += ["### Labeled approach × final number", "", md_table(["labeled", "n"] + NUM_LABELS, rows), ""]
+        rows = [[APPROACH_LABEL[a], len(la)] + [Counter(r["approach_text"] for r in la)[x] for x in TEXT_LABELS]
+                for a in APPROACHES for la in [[r for r in L if r["approach"] == a]]]
+        out += ["### Labeled approach × stated method (check)", "", md_table(["labeled", "n"] + TEXT_LABELS, rows), ""]
 
-    # 2. text / number agreement
+    # 2. number / stated method agreement
     rows = []
     for name, rs in [("labeled", L), ("neutral", N), ("both", L + N)]:
         both = [r for r in rs if r["agree"] is not None]
         rows.append([name, len(rs), pct(len(both), len(rs)), pct(sum(r["agree"] for r in both), len(both))])
-    out += ["### Text / number agreement", "",
-            "both in A/B/C: answers where the stated method and the final number each map to one approach; agree: share of "
+    out += ["### Number / stated method agreement", "",
+            "both in A/B/C: answers where the final number and the stated method each map to one approach; agree: share of "
             "those where they match.", "", md_table(["set", "n", "both in A/B/C", "agree"], rows), ""]
     for name, rs in [("labeled", L), ("neutral", N)]:
         if rs:
-            rows = [[t] + [sum(r["approach_text"] == t and r["approach_number"] == k for r in rs) for k in NUM_LABELS] for t in TEXT_LABELS]
-            out += [f"#### {name}: text label (rows) × number label (columns)", "", md_table(["text \\ number"] + NUM_LABELS, rows), ""]
+            rows = [[k] + [sum(r["approach_number"] == k and r["approach_text"] == t for r in rs) for t in TEXT_LABELS] for k in NUM_LABELS]
+            out += [f"#### {name}: number label (rows) × stated method (columns)", "", md_table(["number \\ stated"] + TEXT_LABELS, rows), ""]
 
     if L:
         by = defaultdict(list)
         for r in L:
             by[(r["approach"], r["desc_id"], r["heldout_desc"])].append(r)
-        rows = [[d, a, "held out" if h else "", acc(rs), dist_str(rs)] for (a, d, h), rs in sorted(by.items())]
-        out += ["### Follow rate per description (text label)", "", md_table(["desc", "approach", "", "followed", "stated methods"], rows), ""]
+        rows = [[d, a, "held out" if h else "", acc(rs), dist_str(rs), acc(rs, "approach_text"), dist_str(rs, "approach_text")]
+                for (a, d, h), rs in sorted(by.items())]
+        out += ["### Follow rate per description", "",
+                md_table(["desc", "approach", "", "followed (number)", "final numbers", "followed (stated, check)", "stated methods"], rows), ""]
         rows = []
         for key in ["frame", "position", "heldout_wording"]:
             by = defaultdict(list)
             for r in L:
                 by[r[key]].append(r)
-            rows += [[f"{key}={k}", acc(rs), acc(rs, "approach_number")] for k, rs in sorted(by.items())]
-        out += ["### Follow rate per clause frame / position / wording split", "", md_table(["", "text", "number"], rows), ""]
+            rows += [[f"{key}={k}", acc(rs), acc(rs, "approach_text")] for k, rs in sorted(by.items())]
+        out += ["### Follow rate per clause frame / position / wording split", "", md_table(["", "number", "stated (check)"], rows), ""]
 
     # 3. neutral distribution per wording
     rows = []
@@ -192,30 +202,40 @@ def section(tag, meta, data):
         wid = w["wording_id"]
         ns = [r for r in N if r["wording_id"] == wid]
         ls = [r for r in L if r["wording_id"] == wid]
-        abc = [r["approach_text"] for r in ns if r["approach_text"] in APPROACHES]
+        abc = [r["approach_number"] for r in ns if r["approach_number"] in APPROACHES]
         maj = f"{max(Counter(abc).values()) / len(abc):.1f} ({len(abc)})" if abc else "–"
-        rows.append([wid, "H" if w["heldout_wording"] else "", dist_str(ns) if ns else "–", maj,
-                     dist_str(ns, "approach_number") if ns else "–", acc(ls) if ls else "–",
+        silent = Counter(r["approach_number"] for r in ns if r["approach_number"] in APPROACHES and r["approach_text"] == "none")
+        silent_s = " ".join(f"{a}:{silent[a]}" for a in APPROACHES if silent[a]) or "–"
+        rows.append([wid, "H" if w["heldout_wording"] else "", dist_str(ns) if ns else "–", maj, silent_s if ns else "–",
+                     dist_str(ns, "approach_text") if ns else "–", acc(ls) if ls else "–",
                      w["text"][:90] + ("…" if len(w["text"]) > 90 else "")])
     out += ["### Neutral samples per wording (H = held-out wording)", "",
-            "majority: share of the most frequent approach among the wording's A/B/C-labeled samples (count of such samples).", "",
-            md_table(["id", "", "stated method", "majority", "final number", "labeled followed", "wording"], rows), ""]
+            "majority: share of the most frequent approach among the wording's samples ending in 1/3, 1/2 or 1/4 (count of "
+            "such samples). number, no method: samples ending in a canonical number whose text states no method, by number. "
+            "labeled followed: final-number follow rate on the wording's labeled prompts.", "",
+            md_table(["id", "", "final number", "majority", "number, no method", "stated method (check)", "labeled followed", "wording"], rows), ""]
 
     if N:
-        aw, asmp = across_wordings(N), across_samples(N)
         rows = []
-        if asmp:
-            rows.append(["pooled stated method over A/B/C-labeled samples", " ".join(f"{a}:{n}" for a, n in asmp["pooled"].items())])
-        if aw:
-            rows.append([f"across wordings: chi-square on {aw['n_wordings']} wordings × 3 approaches ({aw['n']} samples)",
-                         f"χ² = {aw['chi2']:.1f}, df = {aw['df']}, permutation p = {aw['p_perm']:.3f}"])
-        else:
-            rows.append(["across wordings", "not computed (fewer than 2 wordings or 1 approach)"])
-        if asmp:
-            rows.append([f"across samples: mean within-wording majority share ({asmp['n_wordings']} wordings)",
-                         f"{asmp['mean_majority']:.2f}; expected {asmp['expected_iid']:.2f} if every sample were an iid draw from the pooled mix"])
-            rows.append(["wordings whose A/B/C-labeled samples all state the same method", f"{asmp['single']}/{asmp['n_wordings']}"])
-        out += ["### Variation of the neutral stated method", "", md_table(["", ""], rows), ""]
+        for key, name in [("approach_number", "final number"), ("approach_text", "stated method (check)")]:
+            aw, asmp = across_wordings(N, key), across_samples(N, key)
+            if asmp:
+                rows.append([name, "pooled mix over samples labeled A/B/C",
+                             " ".join(f"{a}:{n}" for a, n in asmp["pooled"].items())])
+            if aw:
+                rows.append([name, f"does the mix differ across wordings more than with shuffled labels? ({aw['n_wordings']} "
+                                   f"wordings, {aw['n']} samples)",
+                             f"spread {aw['chi2']:.1f} (df {aw['df']}); {100 * aw['p_perm']:.1f}% of {N_PERM} shufflings of the "
+                             f"labels across wordings spread as much or more"])
+            else:
+                rows.append([name, "mix across wordings", "not computed (fewer than 2 wordings or 1 approach)"])
+            if asmp:
+                rows.append([name, f"agreement within a wording: mean share of the wording's most frequent approach "
+                                   f"({asmp['n_wordings']} wordings)",
+                             f"{asmp['mean_majority']:.2f}; {asmp['expected_iid']:.2f} if every sample were an independent "
+                             f"draw from the pooled mix"])
+                rows.append([name, "wordings whose samples all land on the same approach", f"{asmp['single']}/{asmp['n_wordings']}"])
+        out += ["### Variation of the neutral approach", "", md_table(["label", "", ""], rows), ""]
 
     allr = L + N
     if allr:
@@ -242,21 +262,68 @@ def samples_file(tag, data):
     for kind, r in picks:
         label = f"labeled {r['approach']} / {r['desc_id']}" if kind == "labeled" else f"neutral sample {r['sample']}"
         out += [f"## {r['id']} — {label}", "",
-                f"scorer: text→**{r['approach_text']}** (hits {r.get('method_hits')}), "
-                f"number→**{r['approach_number']}** ({r['final_how']}, value {r['final_value']}), "
+                f"scorer: number→**{r['approach_number']}** ({r['final_how']}, value {r['final_value']}), "
+                f"stated→**{r['approach_text']}** (hits {r.get('method_hits')}), "
                 f"paradox={r['mentions_paradox']}, {r['n_tokens']} tokens", "",
                 "> " + r["prompt"].replace("\n", "\n> "), "", "```", r["answer"], "```", ""]
     (S1 / f"samples_{tag}.md").write_text("\n".join(out), encoding="utf-8")
 
 
+def _read_entry(r, extra=""):
+    v = "–" if r["final_value"] is None else r["final_value"]
+    return [f"## {r['id']} — wording {r['wording_id']}, sample {r['sample']}{extra}", "",
+            f"- number: **{r['approach_number']}** (value {v}, {r['final_how']})",
+            f"- stated method: **{r['approach_text']}** (hits {r['method_hits']})",
+            f"- {r['n_tokens']} tokens", "", "> " + r["prompt"].replace("\n", "\n> "), "", "```", r["answer"], "```", ""]
+
+
+def read_files(tag, data):
+    """Hand-reading files: every neutral answer, and N_READ_LABELED labeled answers spread evenly over approaches
+    and their descriptions (wordings drawn at random within a description)."""
+    N = sorted(data["neutral"], key=lambda r: (r["wording_id"], r["sample"]))
+    if N:
+        out = [f"# {tag}: all {len(N)} neutral answers", "",
+               "Sorted by wording, then sample. number = label from the final number (primary); stated method = label "
+               "from the method markers (check).", ""]
+        for r in N:
+            out += _read_entry(r)
+        (S1 / f"read_neutral_{tag}.md").write_text("\n".join(out), encoding="utf-8")
+    L = data["labeled"]
+    if L:
+        rng = random.Random(0)
+        per = N_READ_LABELED // len(APPROACHES)
+        picks = []
+        for a in APPROACHES:
+            by = defaultdict(list)
+            for r in L:
+                if r["approach"] == a:
+                    by[r["desc_id"]].append(r)
+            for rs in by.values():
+                rng.shuffle(rs)
+            descs = sorted(by)
+            for i in range(per):  # round-robin over descriptions
+                d = descs[i % len(descs)]
+                picks.append(by[d][i // len(descs)])
+        picks.sort(key=lambda r: (r["approach"], r["desc_id"], r["wording_id"]))
+        out = [f"# {tag}: {len(picks)} labeled answers spread across approaches and descriptions", "",
+               f"{per} per approach, round-robin over its descriptions (seed 0). number = label from the final number "
+               "(primary); stated method = label from the method markers (check).", ""]
+        for r in picks:
+            held = ", held-out desc" if r["heldout_desc"] else ""
+            out += _read_entry(r, f" — labeled **{r['approach']}** / {r['desc_id']}{held}")
+        (S1 / f"read_labeled_{tag}.md").write_text("\n".join(out), encoding="utf-8")
+
+
 def main():
     utf8_stdout()
     parts = ["# Stage 1 summary", "", "Generated by `s1_summarize.py` from `results/s1/{labeled,neutral}_*.jsonl`. "
-             "Text label (stated method) is primary, final number secondary.", ""]
+             "Final number (1/3, 1/2, 1/4) is the primary label; the stated method is kept as a check next to it.", ""]
     for tag in tags():
         meta, data = load(tag)
         parts.append(section(tag, meta, data))
         samples_file(tag, data)
+        if tag in READ_TAGS:
+            read_files(tag, data)
     text = "\n".join(parts)
     (S1 / "summary.md").write_text(text, encoding="utf-8")
     print(text)

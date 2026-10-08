@@ -1,10 +1,10 @@
 """Score a model answer to a Bertrand prompt.
 
-Primary label (approach_text) = the method stated in the text, read with keyword markers per approach:
-  exactly one approach's markers fire -> that approach; two or more -> "multiple"; none -> "none".
-Secondary label (approach_number) = the final number: 1/3 -> A (endpoints), 1/2 -> B (radial), 1/4 -> C
+Primary label (approach_number) = the final number: 1/3 -> A (endpoints), 1/2 -> B (radial), 1/4 -> C
   (midpoint), anything else -> "other", no number -> "none", several canonical numbers with no clear final ->
   "multiple".
+Check label (approach_text) = the method stated in the text, read with keyword markers per approach:
+  exactly one approach's markers fire -> that approach; two or more -> "multiple"; none -> "none".
 `agree` says whether the two labels match when both are in A/B/C. Run this file to self-test.
 
 Markers are matched sentence by sentence; a B "distance uniform" sentence that also talks about the midpoint or

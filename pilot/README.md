@@ -55,5 +55,5 @@ are the knobs.
 ## Files
 
 - `prompts/build_prompts.py` regenerates `prompts/*.jsonl` deterministically (18 neutral, 432 labeled; every wording says "chord").
-- `score.py` labels an answer by the method stated in its text (primary) and by its final number (secondary); run it to self-test.
+- `score.py` labels an answer by its final number (primary) and by the method stated in its text (kept as a check); run it to self-test.
 - `common.py` holds model loading, the chat template, residual-stream recording and the steering hook.
