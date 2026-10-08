@@ -1,8 +1,9 @@
 """Shared helpers: paths, model loading, chat formatting, generation, residual-stream capture and steering.
 
 Layer indexing used everywhere in the pilot: 0 = embedding output, k = output of decoder block k (1..n_layers).
-Precision rule: mode "forward" loads fp32 (Mac, forward-only runs); mode "generate" loads bf16 on CUDA,
-fp16 on MPS, fp32 on CPU.
+Precision (since 2026-10-08): half precision on every machine, bf16 on CUDA, fp16 on MPS (fp32 only on CPU, which
+is not a target). The 7B loads in 4-bit (bitsandbytes nf4, bf16 compute) and needs CUDA. The `mode` argument of
+load_model/run_meta is kept for the callers but no longer changes the dtype.
 """
 from __future__ import annotations
 
@@ -18,8 +19,11 @@ HERE = Path(__file__).resolve().parent
 PROMPTS = HERE / "prompts"
 RESULTS = HERE / "results"
 
-MODELS = {"1.5b": "Qwen/Qwen2.5-1.5B-Instruct", "3b": "Qwen/Qwen2.5-3B-Instruct"}
-TAGS = {"Qwen/Qwen2.5-1.5B-Instruct": "qwen1.5b", "Qwen/Qwen2.5-3B-Instruct": "qwen3b"}
+MODELS = {"1.5b": "Qwen/Qwen2.5-1.5B-Instruct", "3b": "Qwen/Qwen2.5-3B-Instruct", "7b": "Qwen/Qwen2.5-7B-Instruct"}
+TAGS = {"Qwen/Qwen2.5-1.5B-Instruct": "qwen1.5b", "Qwen/Qwen2.5-3B-Instruct": "qwen3b",
+        "Qwen/Qwen2.5-7B-Instruct": "qwen7b"}
+QUANT4 = {"Qwen/Qwen2.5-7B-Instruct"}  # loaded in 4-bit nf4 (bitsandbytes); the 8 GB GPU cannot hold it in bf16
+DEFAULT_BATCH = {"qwen1.5b": 8, "qwen3b": 4, "qwen7b": 2}  # generation batch sizes for the 8 GB GPU; raise if memory allows
 APPROACHES = ["A", "B", "C"]
 APPROACH_LABEL = {"A": "A endpoints 1/3", "B": "B radial 1/2", "C": "C midpoint 1/4"}
 
@@ -47,26 +51,45 @@ def pick_device() -> str:
     return "cpu"
 
 
-def pick_dtype(device: str, mode: str) -> torch.dtype:
-    if mode == "forward":
-        return torch.float32
+def pick_dtype(device: str, mode: str | None = None) -> torch.dtype:
+    """Half precision everywhere (bf16 CUDA, fp16 MPS); fp32 only on CPU. `mode` is ignored (kept for callers)."""
     return {"cuda": torch.bfloat16, "mps": torch.float16, "cpu": torch.float32}[device]
 
 
-def load_model(key: str, mode: str, device: str | None = None):
+def dtype_label(name: str, device: str) -> str:
+    if name in QUANT4:
+        return "4bit-nf4/bf16"
+    return str(pick_dtype(device)).replace("torch.", "")
+
+
+def default_batch(name: str) -> int:
+    return DEFAULT_BATCH.get(model_tag(name), 4)
+
+
+def load_model(key: str, mode: str | None = None, device: str | None = None):
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     name = resolve_model(key)
     device = device or pick_device()
-    dtype = pick_dtype(device, mode)
     tok = AutoTokenizer.from_pretrained(name)
     tok.padding_side = "left"
     t0 = time.time()
-    model = AutoModelForCausalLM.from_pretrained(name, dtype=dtype)
-    model.to(device).eval()
-    got = next(model.parameters()).dtype
-    assert got == dtype, f"wanted {dtype}, loaded {got}"
-    print(f"[common] {name} on {device} as {dtype} ({time.time() - t0:.0f}s)", file=sys.stderr)
+    if name in QUANT4:
+        if device != "cuda":
+            raise SystemExit(f"{name} is run in 4-bit (bitsandbytes), which needs CUDA; got device={device}")
+        from transformers import BitsAndBytesConfig
+        q = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_use_double_quant=True,
+                               bnb_4bit_compute_dtype=torch.bfloat16)
+        model = AutoModelForCausalLM.from_pretrained(name, quantization_config=q, device_map={"": 0},
+                                                     dtype=torch.bfloat16)
+        model.eval()
+    else:
+        dtype = pick_dtype(device)
+        model = AutoModelForCausalLM.from_pretrained(name, dtype=dtype)
+        model.to(device).eval()
+        got = next(model.parameters()).dtype
+        assert got == dtype, f"wanted {dtype}, loaded {got}"
+    print(f"[common] {name} on {device} as {dtype_label(name, device)} ({time.time() - t0:.0f}s)", file=sys.stderr)
     return tok, model, device
 
 
@@ -159,14 +182,17 @@ class Steer:
         self.remove()
 
 
+REPETITION_PENALTY = 1.0
+
+
 @torch.no_grad()
 def generate(tok, model, device, prompt_strs, max_new_tokens=400, temperature=0.0, top_p=0.95, seed=None):
     """Batched generation. temperature <= 0 -> greedy. Returns (texts, n_new_tokens). Qwen's shipped
-    repetition_penalty (1.1) is kept; its top_k=20 is disabled when sampling."""
+    repetition_penalty (1.1) is overridden to 1.0 (no penalty); its top_k=20 is disabled when sampling."""
     enc = encode(tok, prompt_strs, device)
     if seed is not None:
         torch.manual_seed(seed)
-    kw = dict(max_new_tokens=max_new_tokens, pad_token_id=tok.pad_token_id)
+    kw = dict(max_new_tokens=max_new_tokens, pad_token_id=tok.pad_token_id, repetition_penalty=REPETITION_PENALTY)
     if temperature and temperature > 0:
         kw.update(do_sample=True, temperature=float(temperature), top_p=float(top_p), top_k=0)
     else:
@@ -205,13 +231,13 @@ def load_prompts(name: str):
 
 
 def add_common_args(ap: argparse.ArgumentParser):
-    ap.add_argument("--model", default="1.5b", help="1.5b | 3b | HF model id")
+    ap.add_argument("--model", default="1.5b", help="1.5b | 3b | 7b (4-bit, CUDA only) | HF model id")
     ap.add_argument("--device", default=None, help="cuda | mps | cpu (default: auto)")
     ap.add_argument("--limit", type=int, default=0, help="only the first N prompts (smoke test)")
 
 
-def run_meta(model_name, device, mode, **extra):
+def run_meta(model_name, device, mode=None, **extra):
     import transformers
-    return dict(model=model_name, tag=model_tag(model_name), device=device, dtype=str(pick_dtype(device, mode)),
+    return dict(model=model_name, tag=model_tag(model_name), device=device, dtype=dtype_label(model_name, device),
                 torch=torch.__version__, transformers=transformers.__version__,
                 time=time.strftime("%Y-%m-%d %H:%M:%S"), **extra)

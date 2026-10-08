@@ -9,28 +9,32 @@ Needs [uv](https://docs.astral.sh/uv/). From this folder:
 
     uv sync
 
-Windows resolves CUDA torch from the cu124 index automatically (needs an NVIDIA driver >= 550). Check with
-`uv run python -c "import torch; print(torch.cuda.is_available())"`. Models download from the HF hub on first use.
+Windows resolves CUDA torch from the cu124 index automatically (needs an NVIDIA driver >= 550) and also installs
+bitsandbytes for the 4-bit 7B. Check with `uv run python -c "import torch; print(torch.cuda.is_available())"`.
+Models download from the HF hub on first use (the 7B is about 15 GB of bf16 safetensors, quantized at load time).
+
+Precision: half precision everywhere, bf16 on CUDA, fp16 on MPS. The 7B (`--model 7b`) loads in 4-bit nf4 with bf16
+compute and needs CUDA. Generation uses repetition_penalty 1.0 (Qwen ships 1.1).
 
 Any script takes `--limit N` for a smoke test (`--max_new_tokens 60` shortens generation). Generation scripts are
 resumable: re-run the same command after an interruption. `--device cpu|mps|cuda` overrides auto-detection.
 
 ## Stage 1: behavior
 
-Mac (forward-only, fp32):
-
-    uv run python s1_nextword.py --model 1.5b
-    uv run python s1_nextword.py --model 3b
-
-Windows (generation, bf16; 3B uses batch 4):
+Windows (generation; default batch 8 / 4 / 2 for the 1.5B / 3B / 7B, raise `--batch_size` if memory allows):
 
     uv run python s1_generate.py --model 1.5b --set labeled
     uv run python s1_generate.py --model 1.5b --set neutral
     uv run python s1_generate.py --model 3b --set labeled
     uv run python s1_generate.py --model 3b --set neutral
+    uv run python s1_generate.py --model 7b --set labeled
+    uv run python s1_generate.py --model 7b --set neutral
 
 Then `git add results/s1 && git commit && git push`. Summary on any machine: `uv run python s1_summarize.py`
-(writes `results/s1/summary.md` and `results/s1/samples_{tag}.md`).
+(writes `results/s1/summary.md` and `results/s1/samples_{tag}.md`). `--ids w00_a0,w03_b1` runs chosen prompts
+(smoke test).
+
+`s1_nextword.py` (prefilled next-word check) is kept as a script but its numbers are not reported.
 
 ## Stage 2: probe (Mac, model chosen by the researcher)
 
@@ -50,6 +54,6 @@ are the knobs.
 
 ## Files
 
-- `prompts/build_prompts.py` regenerates `prompts/*.jsonl` deterministically (18 neutral, 432 labeled).
-- `score.py` labels an answer by its final number (run it to self-test).
+- `prompts/build_prompts.py` regenerates `prompts/*.jsonl` deterministically (18 neutral, 432 labeled; every wording says "chord").
+- `score.py` labels an answer by the method stated in its text (primary) and by its final number (secondary); run it to self-test.
 - `common.py` holds model loading, the chat template, residual-stream recording and the steering hook.

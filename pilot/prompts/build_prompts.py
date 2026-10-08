@@ -5,7 +5,12 @@ Writes next to this file:
   neutral.jsonl       18 neutral wordings, approach left open (5 flagged heldout_wording)
   labeled.jsonl       18 wordings x 3 approaches x 8 descriptions = 432 (3 descriptions per approach heldout)
   descriptions.json   approaches, clause frames, approach descriptions with held-out flags
-  continuations.json  prefill + canonical continuations for the next-word check
+  continuations.json  prefill + canonical continuations for the next-word check (script kept, not reported)
+
+Every wording says "chord" (the segment phrasings were dropped 2026-10-08). Wordings vary in threshold phrasing,
+radius, sentence order and question verb. Held-out wordings cover all three threshold phrasings and, when the
+search finds such a split, share no (threshold, radius) pair with a training wording; otherwise the rule is
+relaxed to "no identical (threshold, radius, order) triple" and the script says so.
 """
 import itertools
 import json
@@ -26,12 +31,7 @@ APPROACHES = {
     "C": {"name": "midpoint", "answer": "1/4", "value": 1 / 4},
 }
 
-# object key -> (phrase in the problem, short noun used in clauses and prefills)
-OBJECTS = {
-    "chord": ("chord", "chord"),
-    "seg_endpoints": ("segment with both endpoints on the circle", "segment"),
-    "seg_lie": ("line segment whose endpoints lie on the circle", "segment"),
-}
+NOUN = "chord"  # the only object; fills the {noun} placeholder of clauses, descriptions and the prefill
 RADII = ["unspecified", "1", "2", "5"]
 THRESHOLDS = ["triangle", "rsqrt3", "numeric"]
 ORDERS = ["setup_first", "question_first"]
@@ -42,7 +42,7 @@ VERBS = {
     "compute": ("Compute the probability that", "."),
 }
 NUMERIC = {"1": "√3 (about 1.73)", "2": "2√3 (about 3.46)", "5": "5√3 (about 8.66)"}
-VALUES = {"object": list(OBJECTS), "radius": RADII, "threshold": THRESHOLDS, "order": ORDERS, "verb": list(VERBS)}
+VALUES = {"radius": RADII, "threshold": THRESHOLDS, "order": ORDERS, "verb": list(VERBS)}
 COMPONENTS = list(VALUES)
 # cap per value so no single phrasing dominates: ceil(18 / n_values) + 1
 MAX_PER_VALUE_TOTAL = {c: -(-N_WORDINGS // len(VALUES[c])) + 1 for c in COMPONENTS}
@@ -51,10 +51,10 @@ CANONICAL_TEXT = (
     "Consider an equilateral triangle inscribed in a circle. Suppose a chord of the circle is chosen "
     "at random. What is the probability that the chord is longer than a side of the triangle?"
 )
-CANONICAL = {"object": "chord", "radius": "unspecified", "threshold": "triangle", "order": "setup_first",
-             "verb": "probability", "noun": "chord", "text": CANONICAL_TEXT, "canonical": True}
+CANONICAL = {"radius": "unspecified", "threshold": "triangle", "order": "setup_first",
+             "verb": "probability", "noun": NOUN, "text": CANONICAL_TEXT, "canonical": True}
 
-# Clause frames. {desc} is a gerund phrase, {noun} is "chord" or "segment".
+# Clause frames. {desc} is a gerund phrase, {noun} is "chord".
 FRAMES = [
     'In this problem, "at random" means {desc}.',
     "The {noun} is obtained by {desc}.",
@@ -127,25 +127,23 @@ def threshold_phrase(radius, threshold):
     return NUMERIC[radius]
 
 
-def render(obj, radius, threshold, order, verb):
-    obj_phrase, _ = OBJECTS[obj]
+def render(radius, threshold, order, verb):
     verb_text, end = VERBS[verb]
     circ = circle_phrase(radius, threshold)
     thr = threshold_phrase(radius, threshold)
     if order == "setup_first":
-        subject = "chord of the circle" if obj == "chord" else obj_phrase
-        return f"Consider {circ}. A {subject} is drawn at random. {verb_text} it is longer than {thr}{end}"
+        return f"Consider {circ}. A chord of the circle is drawn at random. {verb_text} it is longer than {thr}{end}"
     verb_lower = verb_text[0].lower() + verb_text[1:]
-    return f"Given {circ}, {verb_lower} a {obj_phrase} drawn at random is longer than {thr}{end}"
+    return f"Given {circ}, {verb_lower} a chord drawn at random is longer than {thr}{end}"
 
 
 def all_candidates():
     out = []
-    for obj, radius, thr, order, verb in itertools.product(OBJECTS, RADII, THRESHOLDS, ORDERS, VERBS):
+    for radius, thr, order, verb in itertools.product(RADII, THRESHOLDS, ORDERS, VERBS):
         if thr == "numeric" and radius == "unspecified":
             continue
-        out.append({"object": obj, "radius": radius, "threshold": thr, "order": order, "verb": verb,
-                    "noun": OBJECTS[obj][1], "text": render(obj, radius, thr, order, verb), "canonical": False})
+        out.append({"radius": radius, "threshold": thr, "order": order, "verb": verb,
+                    "noun": NOUN, "text": render(radius, thr, order, verb), "canonical": False})
     return out
 
 
@@ -154,13 +152,16 @@ def covers(ws, comp, k, kmax=None):
     return all(c[v] >= k and (kmax is None or c[v] <= kmax) for v in VALUES[comp])
 
 
-def triple(w):
-    return (w["object"], w["threshold"], w["radius"])
+# Held-out rule, strict first: a held-out wording shares no (threshold, radius) pair with any training wording.
+# Relaxed fallback: no identical (threshold, radius, order) triple. main() reports which one applied.
+RULES = {"strict": lambda w: (w["threshold"], w["radius"]),
+         "relaxed": lambda w: (w["threshold"], w["radius"], w["order"])}
 
 
-def choose_wordings(rng):
+def choose_wordings(rng, rule):
+    key = RULES[rule]
     cands = all_candidates()
-    for _ in range(500_000):
+    for _ in range(300_000):
         ws = [CANONICAL] + rng.sample(cands, N_WORDINGS - 1)
         if not all(covers(ws, c, MIN_PER_VALUE_TOTAL, MAX_PER_VALUE_TOTAL[c]) for c in COMPONENTS):
             continue
@@ -169,12 +170,12 @@ def choose_wordings(rng):
         train = [w for i, w in enumerate(ws) if i not in held_idx]
         if not all(covers(train, c, MIN_PER_VALUE_TRAIN) for c in COMPONENTS):
             continue
-        if not (covers(held, "object", 1) and covers(held, "threshold", 1)):
+        if not covers(held, "threshold", 1):
             continue
-        if any(triple(h) == triple(t) for h in held for t in train):
+        if any(key(h) == key(t) for h in held for t in train):
             continue
         return [dict(w, wording_id=i, heldout_wording=(i in held_idx)) for i, w in enumerate(ws)]
-    raise SystemExit("no wording selection satisfied the constraints; relax them")
+    return None
 
 
 def build_labeled(wordings):
@@ -201,7 +202,13 @@ def write_jsonl(path, rows):
 
 def main():
     rng = random.Random(SEED)
-    wordings = choose_wordings(rng)
+    rule = "strict"
+    wordings = choose_wordings(rng, rule)
+    if wordings is None:
+        rule = "relaxed"
+        wordings = choose_wordings(random.Random(SEED), rule)
+    if wordings is None:
+        raise SystemExit("no wording selection satisfied even the relaxed constraints")
     labeled = build_labeled(wordings)
     assert len({w["text"] for w in wordings}) == N_WORDINGS
     assert len({r["text"] for r in labeled}) == len(labeled) == N_WORDINGS * 3 * 8
@@ -216,7 +223,8 @@ def main():
 
     train = [w for w in wordings if not w["heldout_wording"]]
     held = [w for w in wordings if w["heldout_wording"]]
-    print(f"neutral: {len(wordings)} ({len(train)} train, {len(held)} held out); labeled: {len(labeled)}")
+    print(f"neutral: {len(wordings)} ({len(train)} train, {len(held)} held out); labeled: {len(labeled)}; "
+          f"held-out rule: {rule}")
     for c in COMPONENTS:
         print(f"  {c:9s} total={dict(Counter(w[c] for w in wordings))}  train={dict(Counter(w[c] for w in train))}")
     print("  frames:", dict(Counter(r["frame"] for r in labeled)), " positions:", dict(Counter(r["position"] for r in labeled)))

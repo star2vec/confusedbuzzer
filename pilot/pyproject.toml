@@ -11,6 +11,9 @@ dependencies = [
   "numpy>=1.26",
   "pandas>=2.2",
   "tqdm>=4.66",
+  "scipy>=1.11",
+  # 4-bit loading of the 7B on the Windows GPU; no MPS build, so Windows only
+  "bitsandbytes>=0.45; sys_platform == 'win32'",
 ]
 
 [tool.uv]

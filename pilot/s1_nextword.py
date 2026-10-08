@@ -1,4 +1,4 @@
-"""Stage 1, next-word check (forward-only; Mac, fp32).
+"""Stage 1, next-word check (forward-only). Kept as a script; its numbers are not reported (2026-10-08).
 
 For each neutral prompt the assistant turn is prefilled with "Solution: we choose the {noun} by" and we read
 (a) the top-k next tokens with probabilities, and
