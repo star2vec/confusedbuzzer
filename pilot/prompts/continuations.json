@@ -1,0 +1,23 @@
+{
+  "prefill": "Solution: we choose the {noun} by",
+  "continuations": {
+    "A": [
+      " picking two random points on the circle",
+      " choosing two points uniformly at random on the circle",
+      " selecting two random endpoints on the circle",
+      " taking two independent random points on the circumference"
+    ],
+    "B": [
+      " choosing a random radius and a random point on it",
+      " picking a random distance from the center",
+      " choosing a random direction and a random distance from the center",
+      " selecting a random point on a radius and drawing the perpendicular through it"
+    ],
+    "C": [
+      " choosing a random point inside the circle as its midpoint",
+      " picking a uniformly random midpoint in the disk",
+      " selecting a random point in the disk to be its midpoint",
+      " choosing its midpoint uniformly at random inside the circle"
+    ]
+  }
+}
