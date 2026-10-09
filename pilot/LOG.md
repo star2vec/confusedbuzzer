@@ -61,3 +61,21 @@ The 3B follows a stated approach about twice as often as the 1.5B, mostly for B 
 
 - `s1_generate.py --model 3b --set neutral --n_samples 30 --max_new_tokens 1024` (T = 0.7) resumed from the existing file. It kept samples 0–9 (768 tokens) and added samples 10–29 (1024 tokens) to `neutral_qwen3b.jsonl`, which now holds 540 samples. Each run now writes its own meta row, and new answer rows store their `max_new_tokens`. Hitting the token limit dropped from 17/180 at 768 tokens to 4/360 at 1024.
 - 3B neutral, 540 samples: final number A 121, B 159, C 81, other 177, multiple 2. 191 of the 361 that end in 1/3, 1/2 or 1/4 state no method. Stated-method check: A 49, B 34, C 123, multiple 23, none 311. Across phrasings, 10% of label shuffles spread as much or more on the number (1.2% on the stated method). Within a phrasing the mean majority share is 0.49, against 0.48 for independent draws. So with 30 samples per problem statement, the number-based choice still looks like a per-sample draw. Only the stated method, which is read from fewer samples, hints at some dependence on the phrasing.
+
+## 2026-10-09 — hand judgment of the 3B neutral answers ending in 1/3, 1/2 or 1/4
+
+- What was judged: the 361 of 540 samples in `neutral_qwen3b.jsonl` whose final number is 1/3, 1/2 or 1/4. I read each answer; no script or API did the judging. For each answer I recorded three things. First, the variable treated as evenly spread. Second, whether it was derived (the written steps produce the boxed number) or recalled (a computation that gives something else, wrong ranges or thresholds that happen to land on it, or the number just stated). Third, whether it mentions the paradox. Slips that the number does not depend on were let pass. Using the 120° threshold angle itself as the favourable fraction (threshold/360°), without a model of which arc is favourable, was counted as recalled. Results are in `results/s1/judge_qwen3b.jsonl`; 30 judged answers with full text (10 per number, seed 0) are in `results/s1/judge_check.md`.
+- Overall: 200 derived, 161 recalled. No answer mentions the paradox or that the answer depends on how the chord is chosen (0/361).
+- By number: 1/3 → 30 derived, 91 recalled. 1/2 → 95 derived, 64 recalled. 1/4 → 75 derived, 6 recalled.
+- By variable: angle at the center 30 derived / 109 recalled; distance from the center 95 / 6; midpoint in the disk 75 / 33; none 0 / 10; other 0 / 3 (a band of chords, half the disk area, a segment area).
+- Number × variable: every derived 1/3 uses the angle, every derived 1/2 the distance, every derived 1/4 the midpoint. Recalled 1/2s come from the angle (22), the midpoint (23; the area ratio is computed as 1/4, then 1/2 is boxed), none (10), the distance (6) and other (3). Recalled 1/3s come from the angle (87) and the midpoint with a wrong threshold R/√3 (4).
+- By problem statement (derived / recalled):
+
+| phrasing | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| derived | 6 | 12 | 14 | 4 | 11 | 12 | 6 | 17 | 9 | 8 | 18 | 10 | 9 | 11 | 17 | 6 | 14 | 16 |
+| recalled | 14 | 12 | 3 | 16 | 9 | 6 | 14 | 6 | 6 | 11 | 6 | 11 | 9 | 13 | 5 | 11 | 4 | 5 |
+
+The 1/4s are almost always worked out. Most 1/3s are not: the answer finds the 120° angle and divides it by 360°, or computes 1/6 or 2/3 and boxes 1/3. The 1/2s split between a real computation from the distance and a box that contradicts the working.
+
+Next stage tests: we test whether steering the stated reading and steering the final number give different kinds of answers.
