@@ -5,7 +5,8 @@
 
 repetition_penalty is 1.0 (common.generate); the batch size defaults to 8 / 4 / 2 for the 1.5B / 3B / 7B.
 
-Resumable: appends to results/s1/{set}_{tag}.jsonl and skips (id, sample) pairs already present.
+Resumable: appends to results/s1/{set}_{tag}.jsonl and skips (id, sample) pairs already present; raising --n_samples
+adds the missing sample indices. Each run that generates writes a meta row, and each answer row stores its max_new_tokens.
 Each row stores the answer and the scorer's fields (see score.py).
 """
 import argparse
@@ -56,11 +57,12 @@ def main():
         return
 
     tok, model, device = load_model(args.model, "generate", args.device)
-    if not done:
-        append_jsonl(out, [dict(kind="meta", **run_meta(name, device, "generate", set=args.set, n_samples=n_samples,
-                                                        temperature=temperature, top_p=args.top_p,
-                                                        max_new_tokens=args.max_new_tokens, seed=args.seed,
-                                                        repetition_penalty=REPETITION_PENALTY, batch_size=batch_size))])
+    # one meta row per run that generates anything; a resumed run with new settings gets its own row
+    append_jsonl(out, [dict(kind="meta", **run_meta(name, device, "generate", set=args.set, n_samples=n_samples,
+                                                    temperature=temperature, top_p=args.top_p,
+                                                    max_new_tokens=args.max_new_tokens, seed=args.seed,
+                                                    repetition_penalty=REPETITION_PENALTY, batch_size=batch_size,
+                                                    resumed_after=len(done)))])
 
     keep = ["wording_id", "approach", "desc_id", "heldout_desc", "heldout_wording", "frame", "position", "noun"]
     t0 = time.time()
@@ -74,7 +76,7 @@ def main():
         rows = []
         for (p, k), text, n in zip(batch, texts, n_tok):
             row = dict(kind="answer", id=p["id"], sample=k, **{f: p[f] for f in keep if f in p},
-                       prompt=p["text"], answer=text, n_tokens=n, seed=seed)
+                       prompt=p["text"], answer=text, n_tokens=n, max_new_tokens=args.max_new_tokens, seed=seed)
             row.update(score(text))
             rows.append(row)
         append_jsonl(out, rows)
