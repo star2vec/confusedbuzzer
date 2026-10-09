@@ -174,3 +174,39 @@ Every second layer: residual indices 0, 2, …, 28; 0 is the embeddings. The 7B 
   - Phrasing-level information alone gets 41–50% balanced (last-prompt-token probe) and 40% (prompt-text TF-IDF).
   - Keeping the phrasing → number link but shuffling within phrasings gives 43–45%, with a 95th percentile up to 48%.
   - The window probe's 53% is only a little above these.
+
+## 2026-10-10 — stage 2, last 7B check: how far before the variable is named can the number be read
+
+- **Disk:** I deleted the 1.5B and 3B weights from the Hugging Face cache (8.7 GB). C: went from 5.3 GB free to 14 GB. The 7B weights and all results files are kept.
+- **Setup:**
+  - **Answers:** the same 342 derived neutral answers. For each one, `t` is the first token of the first word that names the variable: "perpendicular distance" (140), "subtend" (89), "central angle" (52), "distance (d) from the center" (53) or "midpoint" (8). Every answer names one, so none were dropped.
+  - **Positions:** the residual stream at layers 0, 2, …, 28, at single positions 30, 20, 10, 5, 2 and 1 tokens before `t`, and at `t` itself. 14 answers name the variable within their first 30 tokens and 9 within 20, so they are missing at those offsets (n = 328 and 333).
+  - **Probe:** same probe and phrasing folds as before; label = final number.
+  - **Nulls:** labels shuffled over all answers, and shuffled only inside each phrasing (20 shuffles). At the best layer, 22, both nulls were rerun with 50 shuffles.
+  - **Words-only baseline:** TF-IDF on the answer text up to the probed position, with and without the prompt in front. The probed position is the last token that residual has read.
+  - **Scores:** balanced accuracy, where chance is 33%. The within-phrasing null, which keeps what the phrasing alone predicts, sits at 37–47% on average, with a 95th percentile of 41–52%.
+- **Curve against offset at layer 22** (probe / within-phrasing null 95th percentile / best words baseline):
+
+| tokens before the word | probe | within-phrasing null 95th percentile | best words baseline |
+|---|---|---|---|
+| 30 | 40% | 41% | 42% |
+| 20 | 48% | 41% | 49% |
+| 10 | 53% | 46% | 49% |
+| 5 | 57% | 47% | 48% |
+| 2 | 70% | 49% | 58% |
+| 1 | 75% | 48% | 59% |
+| 0 (the word) | 79% | 52% | 72% |
+
+  Layer 16 looks the same within a few points.
+- **In words:**
+  - 30 tokens before the variable is named, the final number cannot be read beyond what the phrasing and the visible words already give.
+  - From about 20 to 5 tokens before, the probe rises from 48% to 57%. That is above the within-phrasing shuffle, and at 5 tokens it is 9 points above the words.
+  - The big step comes in the last two tokens before the word: 70% at 2 tokens and 75% at 1, against 58–59% for the words. The residual one token before the word is the one that predicts the next token. So much of this is the model about to write "perpendicular distance" or "central angle", and that word nearly fixes the method and so the number.
+  - At the word itself, the probe gets 79% and the words 68–72%.
+  - Overall, the number becomes readable shortly before the answer names its variable, mostly in the last few tokens, not at the start of the answer.
+- **Extra rows (layer 22, no nulls):**
+  - **Without the 23 answers whose formula comes before the word:** 40 / 46 / 56 / 58 / 68 / 73 / 80% across the seven offsets, close to the main curve.
+  - **Stricter anchor:** the 53 "distance (d) from the center" answers were re-anchored on a later stricter word (27) or dropped when none followed (26). The curve is 45 / 47 / 59 / 58 / 70 / 73 / 80%. Neither group changes the picture.
+- **First-10-token mean, with the within-phrasing null that was missing last time:** 42–53% balanced across layers. Shuffling only within phrasings gives 42–47% on average, with a 95th percentile of 47–52%. Only layer 20 is at all above it (53% against 50%). So the 50–53% that the first 10 tokens reached in the last run is phrasing-level information, not an early per-sample choice.
+- **Caveat:** as in the last entry, the phrasing folds keep test phrasings unseen but do not remove features shared across phrasings. The within-phrasing shuffle and the prompt + answer-text baseline are the bar for "more than the phrasing".
+- Tables: `results/s2/summary_word_qwen7b.md`.

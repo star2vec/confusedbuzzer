@@ -54,6 +54,14 @@ Answer direction (Windows, after the stage-1 hand judgment `results/s1/judge_{ta
 
 Writes `results/s2/formula_pos_{tag}.json`, `answer_probe_{tag}.json` and `summary_answer_{tag}.md`.
 
+Before the variable is named in words (probe at 30, 20, 10, 5, 2, 1 and 0 tokens before the first "perpendicular
+distance" / "central angle" / "subtend" / "midpoint" / "distance (d) from the center"):
+
+    uv run python s2_word_acts.py --model 7b --layers 0 2 4 6 8 10 12 14 16 18 20 22 24 26 28
+    uv run python s2_word_probe.py --model 7b
+
+Writes `results/s2/word_probe_{tag}.json` and `summary_word_{tag}.md`.
+
 ## Stage 3: steering sweep (Windows)
 
     uv run python s3_steer.py --model 1.5b --wordings 0 3 7 9 11 14
