@@ -1,4 +1,4 @@
-# qwen7b: 15 random answers for a manual read of the scorer
+# qwen7b: 30 random answers for a manual read of the scorer
 
 ## w08_a5 — labeled A / a5
 
@@ -692,4 +692,759 @@ To solve this problem, we need to understand the geometric setup and the conditi
    - Therefore, the probability is the ratio of the favorable outcomes to the total possible outcomes, which is \(\frac{2}{4} = \frac{1}{2}\).
 
 Thus, the probability that a chord drawn at random is longer than \(\sqrt{3}\) times the radius is \(\boxed{\frac{1}{2}}\).
+```
+
+## w17 — neutral sample 6
+
+scorer: number→**other** (boxed, value 0.6667), stated→**none** (hits {'A': 0, 'B': 0, 'C': 0}), paradox=False, 659 tokens
+
+> Consider a circle of radius 1. A chord of the circle is drawn at random. Compute the probability that it is longer than √3 times the radius.
+
+```
+To solve the problem of finding the probability that a randomly drawn chord of a circle with radius 1 is longer than \(\sqrt{3}\) times the radius, we need to follow these steps:
+
+1. **Understand the Condition**: A chord of a circle is longer than \(\sqrt{3}\) times the radius if its length is greater than \( \sqrt{3} \times 1 = \sqrt{3} \).
+
+2. **Chord Length and Central Angle**: The length \(L\) of a chord in a circle can be expressed in terms of the central angle \(\theta\) subtended by the chord at the center of the circle. The formula for the length of the chord is:
+   \[
+   L = 2 \sin\left(\frac{\theta}{2}\right)
+   \]
+   where \(\theta\) is the central angle in radians.
+
+3. **Set Up the Inequality**: We need \(L > \sqrt{3}\). Substituting the chord length formula, we get:
+   \[
+   2 \sin\left(\frac{\theta}{2}\right) > \sqrt{3}
+   \]
+   Simplifying, we find:
+   \[
+   \sin\left(\frac{\theta}{2}\right) > \frac{\sqrt{3}}{2}
+   \]
+
+4. **Determine the Central Angle Range**: The sine function \(\sin\left(\frac{\theta}{2}\right) = \frac{\sqrt{3}}{2}\) at \(\frac{\theta}{2} = \frac{\pi}{3}\). Therefore, the inequality \(\sin\left(\frac{\theta}{2}\right) > \frac{\sqrt{3}}{2}\) holds for:
+   \[
+   \frac{\pi}{3} < \frac{\theta}{2} < \frac{2\pi}{3}
+   \]
+   Multiplying through by 2, we get:
+   \[
+   \frac{2\pi}{3} < \theta < \frac{4\pi}{3}
+   \]
+
+5. **Probability Calculation**: The probability that a randomly chosen chord is longer than \(\sqrt{3}\) is the ratio of the favorable angle range to the total possible angle range. The total possible range for \(\theta\) is \(0 \leq \theta \leq \pi\) (since the chord can be on either side of the diameter).
+
+   The favorable range is:
+   \[
+   \frac{4\pi}{3} - \frac{2\pi}{3} = \frac{2\pi}{3}
+   \]
+
+   The total range is:
+   \[
+   \pi
+   \]
+
+   Therefore, the probability \(P\) is:
+   \[
+   P = \frac{\frac{2\pi}{3}}{\pi} = \frac{2}{3}
+   \]
+
+So, the probability that a randomly drawn chord of a circle with radius 1 is longer than \(\sqrt{3}\) times the radius is \(\boxed{\frac{2}{3}}\).
+```
+
+## w04 — neutral sample 22
+
+scorer: number→**other** (boxed, value 0.6667), stated→**none** (hits {'A': 0, 'B': 0, 'C': 0}), paradox=False, 688 tokens
+
+> Given a circle of radius 2, find the probability that a chord drawn at random is longer than √3 times the radius.
+
+```
+To find the probability that a randomly drawn chord in a circle of radius 2 is longer than \(\sqrt{3}\) times the radius, we need to follow these steps:
+
+1. **Determine the length of the chord in terms of the angle subtended at the center:**
+
+   The length of a chord \(AB\) in a circle can be expressed as:
+   \[
+   AB = 2R \sin\left(\frac{\theta}{2}\right)
+   \]
+   where \(R\) is the radius of the circle, and \(\theta\) is the central angle subtended by the chord \(AB\).
+
+2. **Set up the inequality for the chord length:**
+
+   Given \(R = 2\), we need the chord length \(AB > \sqrt{3} \times 2\):
+   \[
+   2 \times 2 \sin\left(\frac{\theta}{2}\right) > 2\sqrt{3}
+   \]
+   Simplifying this, we get:
+   \[
+   4 \sin\left(\frac{\theta}{2}\right) > 2\sqrt{3}
+   \]
+   \[
+   \sin\left(\frac{\theta}{2}\right) > \frac{\sqrt{3}}{2}
+   \]
+
+3. **Find the corresponding angle \(\theta\):**
+
+   The sine function \(\sin\left(\frac{\theta}{2}\right) = \frac{\sqrt{3}}{2}\) when \(\frac{\theta}{2} = \frac{\pi}{3}\) or \(\frac{\theta}{2} = \pi - \frac{\pi}{3} = \frac{2\pi}{3}\).
+
+   Therefore, \(\theta = \frac{2\pi}{3}\).
+
+4. **Calculate the probability:**
+
+   The probability that a randomly drawn chord is longer than \(\sqrt{3}\) times the radius is the ratio of the favorable angles to the total possible angles. The total possible angle for a chord is \(2\pi\).
+
+   The favorable angle range is from \(0\) to \(\frac{2\pi}{3}\) and from \(\frac{4\pi}{3}\) to \(2\pi\). The combined favorable angle range is:
+   \[
+   \left(\frac{2\pi}{3} - 0\right) + \left(2\pi - \frac{4\pi}{3}\right) = \frac{2\pi}{3} + \frac{2\pi}{3} = \frac{4\pi}{3}
+   \]
+
+   The probability is the ratio of the favorable angle range to the total angle range:
+   \[
+   \text{Probability} = \frac{\frac{4\pi}{3}}{2\pi} = \frac{4\pi}{3} \times \frac{1}{2\pi} = \frac{4}{6} = \frac{2}{3}
+   \]
+
+Thus, the probability that a randomly drawn chord in a circle of radius 2 is longer than \(\sqrt{3}\) times the radius is \(\boxed{\frac{2}{3}}\).
+```
+
+## w09 — neutral sample 18
+
+scorer: number→**other** (boxed, value 0.6667), stated→**none** (hits {'A': 0, 'B': 0, 'C': 0}), paradox=False, 738 tokens
+
+> Given a circle of radius 2, find the probability that a chord drawn at random is longer than the side of an equilateral triangle inscribed in the circle.
+
+```
+To find the probability that a randomly drawn chord of a circle with radius 2 is longer than the side of an inscribed equilateral triangle, we can follow these steps:
+
+1. **Find the side length of the equilateral triangle inscribed in the circle:**
+
+   For an equilateral triangle inscribed in a circle, the side length \( s \) can be calculated using the formula:
+   \[
+   s = R \sqrt{3}
+   \]
+   where \( R \) is the radius of the circle. Given \( R = 2 \):
+   \[
+   s = 2 \sqrt{3}
+   \]
+
+2. **Determine the condition for a chord to be longer than the side of the equilateral triangle:**
+
+   A chord of a circle is longer than the side of the inscribed equilateral triangle if its length is greater than \( 2\sqrt{3} \).
+
+3. **Find the maximum length of a chord in the circle:**
+
+   The longest chord in a circle is the diameter, which is \( 2R \):
+   \[
+   2R = 4
+   \]
+
+4. **Use geometric probability to find the probability:**
+
+   We need to find the probability that a randomly drawn chord is longer than \( 2\sqrt{3} \). This is equivalent to finding the fraction of the circle's area where a randomly chosen point lies such that the chord through that point is longer than \( 2\sqrt{3} \).
+
+   Consider the circle and the central angle subtended by the chord of length \( 2\sqrt{3} \). The chord length formula in a circle is:
+   \[
+   \text{Chord length} = 2R \sin\left(\frac{\theta}{2}\right)
+   \]
+   Setting this equal to \( 2\sqrt{3} \):
+   \[
+   2 \cdot 2 \sin\left(\frac{\theta}{2}\right) = 2\sqrt{3}
+   \]
+   \[
+   4 \sin\left(\frac{\theta}{2}\right) = 2\sqrt{3}
+   \]
+   \[
+   \sin\left(\frac{\theta}{2}\right) = \frac{\sqrt{3}}{2}
+   \]
+   The angle \( \frac{\theta}{2} \) that satisfies this is \( \frac{\pi}{3} \) (or 60 degrees). Therefore, \( \theta = \frac{2\pi}{3} \).
+
+   The angle subtended by the chord that is shorter than \( 2\sqrt{3} \) is \( \frac{2\pi}{3} \). The angle subtended by the chord that is longer than \( 2\sqrt{3} \) is:
+   \[
+   2\pi - \frac{2\pi}{3} = \frac{4\pi}{3}
+   \]
+
+   The probability is the ratio of the favorable angle to the total angle:
+   \[
+   \text{Probability} = \frac{\frac{4\pi}{3}}{2\pi} = \frac{4\pi}{3} \cdot \frac{1}{2\pi} = \frac{2}{3}
+   \]
+
+Thus, the probability that a randomly drawn chord is longer than the side of an equilateral triangle inscribed in the circle is \(\boxed{\frac{2}{3}}\).
+```
+
+## w04 — neutral sample 23
+
+scorer: number→**C** (boxed, value 0.25), stated→**none** (hits {'A': 0, 'B': 0, 'C': 0}), paradox=False, 544 tokens
+
+> Given a circle of radius 2, find the probability that a chord drawn at random is longer than √3 times the radius.
+
+```
+To find the probability that a randomly drawn chord in a circle of radius 2 is longer than \( \sqrt{3} \) times the radius, we need to follow these steps:
+
+1. **Determine the length of the chord that is \( \sqrt{3} \) times the radius:**
+
+   The radius of the circle is 2. So, \( \sqrt{3} \times 2 = 2\sqrt{3} \).
+
+2. **Identify the condition for a chord to be longer than \( 2\sqrt{3} \):**
+
+   A chord is longer than \( 2\sqrt{3} \) if the perpendicular distance from the center of the circle to the chord is less than the distance \( d \) such that the chord length \( L \) is \( 2\sqrt{3} \). Using the Pythagorean theorem in the right triangle formed by the radius, the perpendicular distance, and half the chord length, we have:
+   \[
+   2^2 = d^2 + \left(\frac{2\sqrt{3}}{2}\right)^2
+   \]
+   \[
+   4 = d^2 + 3
+   \]
+   \[
+   d^2 = 1
+   \]
+   \[
+   d = 1
+   \]
+   So, a chord is longer than \( 2\sqrt{3} \) if the distance from the center to the chord is less than 1.
+
+3. **Calculate the probability:**
+
+   The probability that a randomly drawn chord is longer than \( 2\sqrt{3} \) is the ratio of the area of the region where the distance from the center to the chord is less than 1 to the area of the entire circle.
+
+   The area of the entire circle is:
+   \[
+   \pi \times 2^2 = 4\pi
+   \]
+
+   The region where the distance from the center to the chord is less than 1 is a circle of radius 1. The area of this circle is:
+   \[
+   \pi \times 1^2 = \pi
+   \]
+
+   Therefore, the probability that a randomly drawn chord is longer than \( 2\sqrt{3} \) is:
+   \[
+   \frac{\pi}{4\pi} = \frac{1}{4}
+   \]
+
+So, the probability that a chord drawn at random is longer than \( \sqrt{3} \) times the radius is \(\boxed{\frac{1}{4}}\).
+```
+
+## w03 — neutral sample 7
+
+scorer: number→**other** (boxed, value 0.6667), stated→**none** (hits {'A': 0, 'B': 0, 'C': 0}), paradox=False, 532 tokens
+
+> Given a circle of radius 2, what is the chance that a chord drawn at random is longer than the side of an equilateral triangle inscribed in the circle?
+
+```
+To solve this problem, we need to understand the conditions under which a randomly drawn chord is longer than the side of an equilateral triangle inscribed in a circle of radius 2.
+
+### Step 1: Determine the side length of the inscribed equilateral triangle
+The side length of an equilateral triangle inscribed in a circle can be calculated using the formula for the side length \( s \) of an equilateral triangle inscribed in a circle of radius \( R \):
+
+\[ s = R \sqrt{3} \]
+
+Given \( R = 2 \):
+
+\[ s = 2 \sqrt{3} \]
+
+### Step 2: Determine the condition for a chord to be longer than \( s \)
+A chord in a circle is longer than the side of an equilateral triangle inscribed in the circle if it is longer than \( 2\sqrt{3} \).
+
+### Step 3: Visualize the problem
+Consider a circle with center \( O \) and radius \( R = 2 \). The side length of the equilateral triangle is \( 2\sqrt{3} \). The chord that subtends an angle \( \theta \) at the center \( O \) of the circle will be longer than \( 2\sqrt{3} \) if the angle \( \theta \) is greater than \( 120^\circ \) (or \( \frac{2\pi}{3} \) radians).
+
+### Step 4: Calculate the probability
+The total angle around the circle is \( 360^\circ \) or \( 2\pi \) radians. The angle for which the chord is longer than \( 2\sqrt{3} \) is \( 240^\circ \) (or \( \frac{4\pi}{3} \) radians).
+
+The probability that a randomly drawn chord is longer than \( 2\sqrt{3} \) is the ratio of the favorable angle to the total angle:
+
+\[ \text{Probability} = \frac{\text{Favorable angle}}{\text{Total angle}} = \frac{240^\circ}{360^\circ} = \frac{2\pi}{3} \div 2\pi = \frac{2\pi/3}{2\pi} = \frac{2}{3} \]
+
+Thus, the probability that a chord drawn at random is longer than the side of an equilateral triangle inscribed in the circle is:
+
+\[ \boxed{\frac{2}{3}} \]
+```
+
+## w08 — neutral sample 16
+
+scorer: number→**other** (boxed, value 0.6667), stated→**B** (hits {'A': 0, 'B': 1, 'C': 0}), paradox=False, 658 tokens
+
+> Consider a circle of radius 5. A chord of the circle is drawn at random. What is the probability that it is longer than 5√3 (about 8.66)?
+
+```
+To determine the probability that a randomly drawn chord of a circle with radius 5 is longer than \(5\sqrt{3}\), we can use geometric probability. Here's a step-by-step approach:
+
+1. **Understand the Geometry**: 
+   - The longest chord in a circle is the diameter, which is \(10\) for a circle with radius \(5\).
+   - The shortest chord (other than the diameter) would be one that is perpendicular to the radius at a point on the circle, forming a right triangle with the radius as the hypotenuse.
+
+2. **Determine the Condition for the Chord Length**:
+   - For a chord to be longer than \(5\sqrt{3}\), we need to find the angle subtended by the chord at the center of the circle. 
+   - Using the law of cosines in the triangle formed by the two radii and the chord, we have:
+     \[
+     c^2 = r^2 + r^2 - 2r^2 \cos(\theta)
+     \]
+     where \(c\) is the length of the chord, \(r\) is the radius, and \(\theta\) is the angle subtended by the chord at the center.
+   - Plugging in \(c = 5\sqrt{3}\) and \(r = 5\):
+     \[
+     (5\sqrt{3})^2 = 5^2 + 5^2 - 2 \cdot 5 \cdot 5 \cos(\theta)
+     \]
+     \[
+     75 = 25 + 25 - 50 \cos(\theta)
+     \]
+     \[
+     75 = 50 - 50 \cos(\theta)
+     \]
+     \[
+     25 = -50 \cos(\theta)
+     \]
+     \[
+     \cos(\theta) = -\frac{1}{2}
+     \]
+   - The angle \(\theta\) that satisfies \(\cos(\theta) = -\frac{1}{2}\) is \(\theta = 120^\circ\) or \(\theta = 240^\circ\).
+
+3. **Calculate the Probability**:
+   - The probability that a randomly chosen chord is longer than \(5\sqrt{3}\) is the fraction of the circle's circumference where the angle subtended by the chord is between \(120^\circ\) and \(240^\circ\).
+   - The total angle of the circle is \(360^\circ\), and the angle where the chord is longer than \(5\sqrt{3}\) is \(2 \times 120^\circ = 240^\circ\).
+   - Therefore, the probability is:
+     \[
+     \frac{240^\circ}{360^\circ} = \frac{2}{3}
+     \]
+
+So, the probability that a randomly drawn chord of a circle with radius 5 is longer than \(5\sqrt{3}\) is \(\boxed{\frac{2}{3}}\).
+```
+
+## w05 — neutral sample 0
+
+scorer: number→**A** (boxed, value 0.3333), stated→**none** (hits {'A': 0, 'B': 0, 'C': 0}), paradox=False, 669 tokens
+
+> Given a circle of radius 2, compute the probability that a chord drawn at random is longer than 2√3 (about 3.46).
+
+```
+To determine the probability that a randomly drawn chord in a circle of radius 2 is longer than \(2\sqrt{3}\), we can use geometric probability. The key idea is to relate the length of the chord to the angle subtended by the chord at the center of the circle.
+
+### Step 1: Understand the Geometry
+
+- Let \( O \) be the center of the circle.
+- Let \( A \) and \( B \) be the endpoints of the chord.
+- The length of the chord \( AB \) is given by the formula:
+  \[
+  AB = 2 \cdot R \cdot \sin\left(\frac{\theta}{2}\right)
+  \]
+  where \( R \) is the radius of the circle and \( \theta \) is the central angle subtended by the chord.
+
+For a circle of radius \( R = 2 \):
+\[
+AB = 4 \sin\left(\frac{\theta}{2}\right)
+\]
+
+### Step 2: Determine the Condition for the Chord Length
+
+We want the chord to be longer than \( 2\sqrt{3} \):
+\[
+4 \sin\left(\frac{\theta}{2}\right) > 2\sqrt{3}
+\]
+Simplify this inequality:
+\[
+\sin\left(\frac{\theta}{2}\right) > \frac{\sqrt{3}}{2}
+\]
+
+### Step 3: Solve for the Central Angle
+
+The sine function \( \sin\left(\frac{\theta}{2}\right) = \frac{\sqrt{3}}{2} \) at \( \frac{\theta}{2} = \frac{\pi}{3} \) and \( \frac{\theta}{2} = \frac{2\pi}{3} \).
+
+Thus, the inequality \( \sin\left(\frac{\theta}{2}\right) > \frac{\sqrt{3}}{2} \) is satisfied when:
+\[
+\frac{\pi}{3} < \frac{\theta}{2} < \frac{2\pi}{3}
+\]
+This translates to:
+\[
+\frac{2\pi}{3} < \theta < \frac{4\pi}{3}
+\]
+
+### Step 4: Calculate the Probability
+
+The total possible range for the central angle \( \theta \) is \( 0 \) to \( 2\pi \). The favorable range is from \( \frac{2\pi}{3} \) to \( \frac{4\pi}{3} \), which is a length of \( \frac{4\pi}{3} - \frac{2\pi}{3} = \frac{2\pi}{3} \).
+
+The probability \( P \) is the ratio of the favorable range to the total range:
+\[
+P = \frac{\frac{2\pi}{3}}{2\pi} = \frac{1}{3}
+\]
+
+### Final Answer
+
+The probability that a randomly drawn chord in a circle of radius 2 is longer than \( 2\sqrt{3} \) is:
+\[
+\boxed{\frac{1}{3}}
+\]
+```
+
+## w10 — neutral sample 17
+
+scorer: number→**B** (boxed, value 0.5), stated→**none** (hits {'A': 0, 'B': 0, 'C': 0}), paradox=False, 597 tokens
+
+> Consider a circle of radius 1. A chord of the circle is drawn at random. What is the probability that it is longer than √3 (about 1.73)?
+
+```
+To determine the probability that a randomly drawn chord of a circle of radius 1 is longer than \(\sqrt{3}\), we can use geometric probability. Here's a step-by-step breakdown:
+
+1. **Understand the Geometry**:
+   - The circle has a radius of 1.
+   - A chord is longer than \(\sqrt{3}\) if the perpendicular distance from the center of the circle to the chord is less than \(\frac{1}{2}\).
+
+2. **Perpendicular Distance**:
+   - The perpendicular distance from the center of the circle to a chord is the shortest distance from the center to the chord.
+   - If this distance is \(d\), the length of the chord can be calculated using the Pythagorean theorem in the right triangle formed by the radius, the perpendicular distance, and half the chord length.
+
+3. **Chord Length Formula**:
+   - The length of the chord \(L\) can be expressed as:
+     \[
+     L = 2 \sqrt{r^2 - d^2}
+     \]
+     where \(r\) is the radius of the circle (1 in this case), and \(d\) is the perpendicular distance from the center to the chord.
+   - For the chord to be longer than \(\sqrt{3}\):
+     \[
+     2 \sqrt{1 - d^2} > \sqrt{3}
+     \]
+     Simplifying this, we get:
+     \[
+     \sqrt{1 - d^2} > \frac{\sqrt{3}}{2}
+     \]
+     Squaring both sides:
+     \[
+     1 - d^2 > \frac{3}{4}
+     \]
+     \[
+     d^2 < \frac{1}{4}
+     \]
+     \[
+     d < \frac{1}{2}
+     \]
+
+4. **Probability Calculation**:
+   - The perpendicular distance \(d\) can vary from 0 to 1.
+   - The condition \(d < \frac{1}{2}\) means that the chord is longer than \(\sqrt{3}\) if the perpendicular distance from the center to the chord is less than \(\frac{1}{2}\).
+   - The probability that \(d\) is less than \(\frac{1}{2}\) is the length of the interval \([0, \frac{1}{2}]\) divided by the length of the interval \([0, 1]\):
+     \[
+     \text{Probability} = \frac{\frac{1}{2} - 0}{1 - 0} = \frac{1}{2}
+     \]
+
+Therefore, the probability that a randomly drawn chord of a circle of radius 1 is longer than \(\sqrt{3}\) is \(\boxed{\frac{1}{2}}\).
+```
+
+## w03 — neutral sample 11
+
+scorer: number→**A** (boxed, value 0.3333), stated→**none** (hits {'A': 0, 'B': 0, 'C': 0}), paradox=False, 624 tokens
+
+> Given a circle of radius 2, what is the chance that a chord drawn at random is longer than the side of an equilateral triangle inscribed in the circle?
+
+```
+To solve this problem, we need to determine the probability that a randomly drawn chord of a circle with radius 2 is longer than the side of an equilateral triangle inscribed in the same circle. Let's break this down step by step.
+
+### Step 1: Calculate the side length of the inscribed equilateral triangle
+The side length of an equilateral triangle inscribed in a circle of radius \( R \) can be found using the formula:
+\[ s = R \sqrt{3} \]
+For a circle with radius \( R = 2 \):
+\[ s = 2 \sqrt{3} \]
+
+### Step 2: Determine the condition for a chord to be longer than \( 2\sqrt{3} \)
+A chord of a circle is longer than the side of an inscribed equilateral triangle if it is longer than \( 2\sqrt{3} \).
+
+### Step 3: Use geometric probability
+To find the probability, we need to use geometric probability. The key is to relate the length of the chord to the angle subtended at the center of the circle. If a chord subtends an angle \( \theta \) at the center of the circle, the length of the chord \( c \) can be expressed as:
+\[ c = 2R \sin\left(\frac{\theta}{2}\right) \]
+For our circle with radius \( R = 2 \):
+\[ c = 4 \sin\left(\frac{\theta}{2}\right) \]
+
+We need \( c > 2\sqrt{3} \):
+\[ 4 \sin\left(\frac{\theta}{2}\right) > 2\sqrt{3} \]
+\[ \sin\left(\frac{\theta}{2}\right) > \frac{\sqrt{3}}{2} \]
+
+The sine function \( \sin\left(\frac{\theta}{2}\right) \) is greater than \( \frac{\sqrt{3}}{2} \) when:
+\[ \frac{\theta}{2} > \frac{\pi}{3} \]
+\[ \theta > \frac{2\pi}{3} \]
+
+### Step 4: Calculate the probability
+The angle \( \theta \) can range from \( 0 \) to \( \pi \) (since the maximum chord is the diameter, which subtends an angle of \( \pi \) radians). The probability that a randomly chosen angle \( \theta \) is greater than \( \frac{2\pi}{3} \) is the ratio of the favorable range to the total range:
+\[ \text{Probability} = \frac{\pi - \frac{2\pi}{3}}{\pi} = \frac{\frac{\pi}{3}}{\pi} = \frac{1}{3} \]
+
+Thus, the probability that a randomly drawn chord is longer than the side of an inscribed equilateral triangle is:
+\[ \boxed{\frac{1}{3}} \]
+```
+
+## w02 — neutral sample 15
+
+scorer: number→**B** (boxed, value 0.5), stated→**none** (hits {'A': 0, 'B': 0, 'C': 0}), paradox=False, 693 tokens
+
+> Given a circle of radius 5, find the probability that a chord drawn at random is longer than √3 times the radius.
+
+```
+To find the probability that a chord drawn at random in a circle of radius 5 is longer than \(\sqrt{3}\) times the radius, we need to follow these steps:
+
+1. **Calculate the length of \(\sqrt{3}\) times the radius:**
+   \[
+   \sqrt{3} \times 5 = 5\sqrt{3}
+   \]
+
+2. **Understand the condition for a chord to be longer than \(5\sqrt{3}\):**
+   For a chord to be longer than \(5\sqrt{3}\), it must be the case that the perpendicular distance from the center of the circle to the chord is less than the distance from the center to the midpoint of the chord, which is given by the Pythagorean theorem. Specifically, if the distance from the center to the midpoint of the chord is \(d\), then the length of the chord \(L\) is given by:
+   \[
+   L = 2\sqrt{5^2 - d^2} = 2\sqrt{25 - d^2}
+   \]
+   We need this length to be greater than \(5\sqrt{3}\):
+   \[
+   2\sqrt{25 - d^2} > 5\sqrt{3}
+   \]
+   Simplifying this inequality:
+   \[
+   \sqrt{25 - d^2} > \frac{5\sqrt{3}}{2}
+   \]
+   Squaring both sides:
+   \[
+   25 - d^2 > \left(\frac{5\sqrt{3}}{2}\right)^2 = \frac{75}{4}
+   \]
+   \[
+   25 - d^2 > 18.75
+   \]
+   \[
+   d^2 < 6.25
+   \]
+   \[
+   d < \frac{5}{\sqrt{2}} = \frac{5\sqrt{2}}{2}
+   \]
+
+3. **Determine the probability:**
+   The probability that a randomly drawn chord is longer than \(5\sqrt{3}\) is the ratio of the area where \(d < \frac{5\sqrt{2}}{2}\) to the area of the entire circle. The area of the circle is:
+   \[
+   \pi \times 5^2 = 25\pi
+   \]
+   The area where \(d < \frac{5\sqrt{2}}{2}\) is a smaller circle with radius \(\frac{5\sqrt{2}}{2}\). The area of this smaller circle is:
+   \[
+   \pi \left(\frac{5\sqrt{2}}{2}\right)^2 = \pi \times \frac{25 \times 2}{4} = \frac{25\pi}{2}
+   \]
+   Therefore, the probability is:
+   \[
+   \frac{\frac{25\pi}{2}}{25\pi} = \frac{1}{2}
+   \]
+
+The probability that a chord drawn at random is longer than \(\sqrt{3}\) times the radius is \(\boxed{\frac{1}{2}}\).
+```
+
+## w11 — neutral sample 8
+
+scorer: number→**A** (boxed, value 0.3333), stated→**A** (hits {'A': 2, 'B': 0, 'C': 0}), paradox=False, 631 tokens
+
+> Given a circle of radius 1, find the probability that a chord drawn at random is longer than the side of an equilateral triangle inscribed in the circle.
+
+```
+To solve the problem, we need to determine the probability that a randomly drawn chord in a circle of radius 1 is longer than the side of an inscribed equilateral triangle. Let's break this down step by step.
+
+1. **Determine the side length of the inscribed equilateral triangle:**
+   - For an equilateral triangle inscribed in a circle of radius \( R \), the side length \( s \) can be calculated using the formula \( s = R \sqrt{3} \).
+   - Since the radius \( R \) of the circle is 1, the side length \( s \) of the equilateral triangle is \( s = 1 \cdot \sqrt{3} = \sqrt{3} \).
+
+2. **Understanding the chord length:**
+   - A chord of a circle is longer than the side of the inscribed equilateral triangle if its length is greater than \( \sqrt{3} \).
+   - The longest chord in the circle is the diameter, which has a length of 2.
+
+3. **Geometric probability approach:**
+   - The probability that a randomly drawn chord is longer than \( \sqrt{3} \) can be determined by considering the angle subtended by the chord at the center of the circle.
+   - A chord of length \( \sqrt{3} \) subtends an angle of \( 120^\circ \) (or \( \frac{2\pi}{3} \) radians) at the center of the circle. This is because in an equilateral triangle inscribed in a circle, the central angle is \( 120^\circ \).
+
+4. **Calculate the probability:**
+   - The total angle around the circle is \( 360^\circ \) (or \( 2\pi \) radians).
+   - The angle subtended by chords longer than \( \sqrt{3} \) is \( 360^\circ - 120^\circ = 240^\circ \) (or \( 2\pi - \frac{2\pi}{3} = \frac{4\pi}{3} \)).
+   - The probability is the ratio of the favorable angle to the total angle:
+     \[
+     \text{Probability} = \frac{240^\circ}{360^\circ} = \frac{2\pi}{3} \div 2\pi = \frac{2}{3}
+     \]
+
+Therefore, the probability that a randomly drawn chord is longer than the side of an inscribed equilateral triangle is \(\boxed{\frac{1}{3}}\).
+
+**Note:** The above calculation is incorrect. The correct approach involves considering the arc length subtended by chords of length greater than \( \sqrt{3} \). The correct probability is actually \(\boxed{\frac{1}{3}}\), as the favorable arc length is \( \frac{2\pi}{3} \) out of the total \( 2\pi \).
+```
+
+## w16 — neutral sample 3
+
+scorer: number→**other** (cued, value 0.6667), stated→**A** (hits {'A': 3, 'B': 0, 'C': 0}), paradox=False, 595 tokens
+
+> Given a circle of radius 5, what is the chance that a chord drawn at random is longer than 5√3 (about 8.66)?
+
+```
+To determine the probability that a randomly drawn chord in a circle of radius 5 is longer than \(5\sqrt{3}\), we need to understand the geometric constraints and the relevant angles.
+
+### Step 1: Understanding the Chord Length
+For a chord to be longer than \(5\sqrt{3}\), we can use the relationship between the chord length and the central angle. If the central angle is \(\theta\), then the length \(L\) of the chord can be calculated using the formula:
+\[ L = 2R \sin\left(\frac{\theta}{2}\right) \]
+where \(R\) is the radius of the circle. Here, \(R = 5\).
+
+For the chord to be longer than \(5\sqrt{3}\), we set:
+\[ 2 \times 5 \times \sin\left(\frac{\theta}{2}\right) > 5\sqrt{3} \]
+\[ 10 \sin\left(\frac{\theta}{2}\right) > 5\sqrt{3} \]
+\[ 2 \sin\left(\frac{\theta}{2}\right) > \sqrt{3} \]
+\[ \sin\left(\frac{\theta}{2}\right) > \frac{\sqrt{3}}{2} \]
+
+### Step 2: Determine the Central Angle
+The sine function \(\sin\left(\frac{\theta}{2}\right) = \frac{\sqrt{3}}{2}\) at \(\frac{\theta}{2} = \frac{\pi}{3}\) (or 60 degrees). Therefore, for the chord to be longer than \(5\sqrt{3}\), the central angle \(\theta\) must be greater than \(2 \times \frac{\pi}{3} = \frac{2\pi}{3}\) (or 120 degrees).
+
+### Step 3: Calculate the Probability
+The total possible range for the central angle \(\theta\) is from 0 to \(2\pi\). The favorable range for \(\theta\) is from \(\frac{2\pi}{3}\) to \(2\pi\), which is an arc length of \(2\pi - \frac{2\pi}{3} = \frac{4\pi}{3}\).
+
+The probability \(P\) is the ratio of the favorable arc length to the total arc length:
+\[ P = \frac{\frac{4\pi}{3}}{2\pi} = \frac{4\pi}{3} \times \frac{1}{2\pi} = \frac{2}{3} \]
+
+### Conclusion
+The probability that a randomly drawn chord in a circle of radius 5 is longer than \(5\sqrt{3}\) is \(\frac{2}{3}\).
+```
+
+## w03 — neutral sample 13
+
+scorer: number→**A** (boxed, value 0.3333), stated→**A** (hits {'A': 3, 'B': 0, 'C': 0}), paradox=False, 771 tokens
+
+> Given a circle of radius 2, what is the chance that a chord drawn at random is longer than the side of an equilateral triangle inscribed in the circle?
+
+```
+To determine the probability that a randomly drawn chord in a circle of radius 2 is longer than the side of an inscribed equilateral triangle, we can follow these steps:
+
+1. **Calculate the side length of the equilateral triangle:**
+   The side length \( s \) of an equilateral triangle inscribed in a circle of radius \( R \) is given by:
+   \[
+   s = R \sqrt{3}
+   \]
+   For a circle of radius 2:
+   \[
+   s = 2 \sqrt{3}
+   \]
+
+2. **Determine the condition for a chord to be longer than \( s \):**
+   A chord in a circle is longer than the side of the inscribed equilateral triangle if its length is greater than \( 2\sqrt{3} \).
+
+3. **Find the length of the longest chord in the circle:**
+   The longest chord in a circle is the diameter, which is:
+   \[
+   2 \times 2 = 4
+   \]
+
+4. **Calculate the length of the shortest chord longer than \( 2\sqrt{3} \):**
+   The shortest chord longer than \( 2\sqrt{3} \) will be the chord that subtends an angle at the center of the circle such that the length of the chord is just slightly greater than \( 2\sqrt{3} \). The length of a chord subtending an angle \( \theta \) at the center of a circle of radius \( R \) is given by:
+   \[
+   \text{Length} = 2R \sin\left(\frac{\theta}{2}\right)
+   \]
+   We need this length to be just greater than \( 2\sqrt{3} \):
+   \[
+   2 \times 2 \sin\left(\frac{\theta}{2}\right) > 2\sqrt{3}
+   \]
+   Simplifying, we get:
+   \[
+   4 \sin\left(\frac{\theta}{2}\right) > 2\sqrt{3}
+   \]
+   \[
+   \sin\left(\frac{\theta}{2}\right) > \frac{\sqrt{3}}{2}
+   \]
+   The angle whose sine is \( \frac{\sqrt{3}}{2} \) is \( \frac{\pi}{3} \). Therefore:
+   \[
+   \frac{\theta}{2} > \frac{\pi}{3}
+   \]
+   \[
+   \theta > \frac{2\pi}{3}
+   \]
+   The angle \( \theta \) must be greater than \( \frac{2\pi}{3} \).
+
+5. **Calculate the probability:**
+   The probability that a randomly drawn chord is longer than the side of the inscribed equilateral triangle is the ratio of the favorable arc length to the total circumference of the circle. The total circumference of the circle is \( 2\pi \times 2 = 4\pi \).
+
+   The favorable arc length corresponds to the angle \( 2\pi - \frac{2\pi}{3} = \frac{4\pi}{3} \).
+
+   The probability \( P \) is:
+   \[
+   P = \frac{\text{Favorable arc length}}{\text{Total circumference}} = \frac{\frac{4\pi}{3}}{4\pi} = \frac{1}{3}
+   \]
+
+Therefore, the probability that a randomly drawn chord is longer than the side of an equilateral triangle inscribed in the circle is \(\boxed{\frac{1}{3}}\).
+```
+
+## w12 — neutral sample 2
+
+scorer: number→**A** (cued, value 0.3333), stated→**A** (hits {'A': 1, 'B': 0, 'C': 0}), paradox=False, 626 tokens
+
+> Given a circle of radius r, compute the probability that a chord drawn at random is longer than r√3.
+
+```
+To solve this problem, we need to consider the geometric properties of a circle and the possible lengths of a chord drawn at random. We'll use a probabilistic approach based on the angle subtended by the chord at the center of the circle.
+
+### Step-by-Step Solution:
+
+1. **Understanding the Chord Length**:
+   - A chord of a circle is a line segment with both endpoints on the circle.
+   - If a chord subtends an angle \( \theta \) at the center of the circle, the length of the chord can be expressed as \( 2r \sin(\theta/2) \), where \( r \) is the radius of the circle.
+
+2. **Condition for Chord Length**:
+   - We need the chord length to be greater than \( r\sqrt{3} \).
+   - Therefore, we set up the inequality:
+     \[
+     2r \sin\left(\frac{\theta}{2}\right) > r\sqrt{3}
+     \]
+   - Simplifying, we get:
+     \[
+     \sin\left(\frac{\theta}{2}\right) > \frac{\sqrt{3}}{2}
+     \]
+
+3. **Finding the Angle \( \theta \)**:
+   - The sine function \( \sin(x) \) is greater than \( \frac{\sqrt{3}}{2} \) when \( \frac{\pi}{3} < x < \frac{2\pi}{3} \).
+   - Therefore, \( \frac{\pi}{3} < \frac{\theta}{2} < \frac{2\pi}{3} \).
+   - Solving for \( \theta \):
+     \[
+     \frac{2\pi}{3} < \theta < \frac{4\pi}{3}
+     \]
+
+4. **Probability Calculation**:
+   - The total possible range for \( \theta \) is from \( 0 \) to \( 2\pi \).
+   - The favorable range for \( \theta \) is from \( \frac{2\pi}{3} \) to \( \frac{4\pi}{3} \).
+   - The length of the favorable range is \( \frac{4\pi}{3} - \frac{2\pi}{3} = \frac{2\pi}{3} \).
+   - The length of the total range is \( 2\pi \).
+
+   - The probability \( P \) that a randomly drawn chord is longer than \( r\sqrt{3} \) is the ratio of the favorable range to the total range:
+     \[
+     P = \frac{\frac{2\pi}{3}}{2\pi} = \frac{1}{3}
+     \]
+
+### Final Answer:
+The probability that a chord drawn at random in a circle of radius \( r \) is longer than \( r\sqrt{3} \) is \( \frac{1}{3} \).
+```
+
+## w14 — neutral sample 24
+
+scorer: number→**other** (boxed, value 0.6667), stated→**none** (hits {'A': 0, 'B': 0, 'C': 0}), paradox=False, 587 tokens
+
+> Consider a circle of radius 5. A chord of the circle is drawn at random. Find the probability that it is longer than √3 times the radius.
+
+```
+To find the probability that a randomly drawn chord of a circle with radius 5 is longer than \(\sqrt{3} \times 5 = 5\sqrt{3}\), we can use geometric probability. Let's proceed step by step.
+
+1. **Understanding the Chord Length**:
+   - A chord of length \(L\) in a circle of radius \(r\) subtends an angle \(\theta\) at the center of the circle. The relationship between the chord length and the central angle is given by:
+     \[
+     L = 2r \sin\left(\frac{\theta}{2}\right)
+     \]
+   - For our circle, \(r = 5\). So, the chord length \(L\) is:
+     \[
+     L = 10 \sin\left(\frac{\theta}{2}\right)
+     \]
+   - We need \(L > 5\sqrt{3}\), so:
+     \[
+     10 \sin\left(\frac{\theta}{2}\right) > 5\sqrt{3}
+     \]
+     \[
+     \sin\left(\frac{\theta}{2}\right) > \frac{\sqrt{3}}{2}
+     \]
+   - The sine function \(\sin\left(\frac{\theta}{2}\right) > \frac{\sqrt{3}}{2}\) when:
+     \[
+     \frac{\theta}{2} > \frac{\pi}{3}
+     \]
+     \[
+     \theta > \frac{2\pi}{3}
+     \]
+
+2. **Probability Calculation**:
+   - The total range of possible angles \(\theta\) is from \(0\) to \(2\pi\). The favorable range for \(\theta\) is from \(\frac{2\pi}{3}\) to \(2\pi\).
+   - The length of the favorable interval is:
+     \[
+     2\pi - \frac{2\pi}{3} = \frac{6\pi}{3} - \frac{2\pi}{3} = \frac{4\pi}{3}
+     \]
+   - The total interval is \(2\pi\). Therefore, the probability \(P\) is the ratio of the favorable interval to the total interval:
+     \[
+     P = \frac{\frac{4\pi}{3}}{2\pi} = \frac{4\pi}{3} \times \frac{1}{2\pi} = \frac{4}{6} = \frac{2}{3}
+     \]
+
+Thus, the probability that a randomly drawn chord of a circle with radius 5 is longer than \(5\sqrt{3}\) is \(\boxed{\frac{2}{3}}\).
 ```

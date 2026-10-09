@@ -332,7 +332,7 @@ majority: share of the most frequent approach among the phrasing's samples endin
 
 ## qwen7b
 
-Runs: labeled: 2026-10-09 17:12:41, cuda 4bit-nf4/bf16, T=0.0, n_samples=1, max_new_tokens=768, repetition_penalty=1.0 (432 labeled answers in all)
+Runs: labeled: 2026-10-09 17:12:41, cuda 4bit-nf4/bf16, T=0.0, n_samples=1, max_new_tokens=768, repetition_penalty=1.0 (432 labeled answers in all); neutral: 2026-10-09 18:54:39, cuda 4bit-nf4/bf16, T=0.7, n_samples=30, max_new_tokens=1024, repetition_penalty=1.0 (540 neutral answers in all)
 
 ### Approach rates (final number primary, stated method as a check)
 
@@ -340,12 +340,12 @@ Labeled columns: share of answers to prompts labeled with that approach whose la
 
 | approach | labeled, number | neutral, number | labeled, stated (check) | neutral, stated (check) |
 |---|---|---|---|---|
-| A endpoints 1/3 | 63% (91/144) | – | 50% (72/144) | – |
-| B radial 1/2 | 94% (136/144) | – | 65% (94/144) | – |
-| C midpoint 1/4 | 56% (80/144) | – | 57% (82/144) | – |
-| other | 15% (66/432) | – |  |  |
-| multiple | 0% (0/432) | – | 10% (44/432) | – |
-| none | 0% (0/432) | – | 27% (118/432) | – |
+| A endpoints 1/3 | 63% (91/144) | 34% (182/540) | 50% (72/144) | 14% (73/540) |
+| B radial 1/2 | 94% (136/144) | 29% (159/540) | 65% (94/144) | 6% (30/540) |
+| C midpoint 1/4 | 56% (80/144) | 11% (59/540) | 57% (82/144) | 7% (39/540) |
+| other | 15% (66/432) | 26% (139/540) |  |  |
+| multiple | 0% (0/432) | 0% (1/540) | 10% (44/432) | 2% (13/540) |
+| none | 0% (0/432) | 0% (0/540) | 27% (118/432) | 71% (385/540) |
 
 ### Labeled accuracy (answer label = labeled approach)
 
@@ -381,8 +381,8 @@ both in A/B/C: answers where the final number and the stated method each map to 
 | set | n | both in A/B/C | agree |
 |---|---|---|---|
 | labeled | 432 | 54% (233/432) | 96% (224/233) |
-| neutral | 0 | – | – |
-| both | 432 | 54% (233/432) | 96% (224/233) |
+| neutral | 540 | 20% (108/540) | 85% (92/108) |
+| both | 972 | 35% (341/972) | 93% (316/341) |
 
 #### labeled: number label (rows) × stated method (columns)
 
@@ -393,6 +393,17 @@ both in A/B/C: answers where the final number and the stated method each map to 
 | C | 0 | 2 | 66 | 3 | 12 |
 | other | 25 | 1 | 11 | 3 | 26 |
 | multiple | 0 | 0 | 0 | 0 | 0 |
+| none | 0 | 0 | 0 | 0 | 0 |
+
+#### neutral: number label (rows) × stated method (columns)
+
+| number \ stated | A | B | C | multiple | none |
+|---|---|---|---|---|---|
+| A | 43 | 4 | 1 | 2 | 132 |
+| B | 5 | 21 | 6 | 6 | 121 |
+| C | 0 | 0 | 28 | 4 | 27 |
+| other | 25 | 5 | 4 | 0 | 105 |
+| multiple | 0 | 0 | 0 | 1 | 0 |
 | none | 0 | 0 | 0 | 0 | 0 |
 
 ### Follow rate per description
@@ -442,30 +453,43 @@ majority: share of the most frequent approach among the phrasing's samples endin
 
 | id |  | final number | majority | number, no method | stated method (check) | labeled followed | problem statement |
 |---|---|---|---|---|---|---|---|
-| 0 |  | – | – | – | – | 42% (10/24) | Consider an equilateral triangle inscribed in a circle. Suppose a chord of the circle is c… |
-| 1 |  | – | – | – | – | 83% (20/24) | Given a circle of radius 1, what is the chance that a chord drawn at random is longer than… |
-| 2 | H | – | – | – | – | 75% (18/24) | Given a circle of radius 5, find the probability that a chord drawn at random is longer th… |
-| 3 |  | – | – | – | – | 67% (16/24) | Given a circle of radius 2, what is the chance that a chord drawn at random is longer than… |
-| 4 | H | – | – | – | – | 62% (15/24) | Given a circle of radius 2, find the probability that a chord drawn at random is longer th… |
-| 5 |  | – | – | – | – | 71% (17/24) | Given a circle of radius 2, compute the probability that a chord drawn at random is longer… |
-| 6 |  | – | – | – | – | 71% (17/24) | Consider a circle. A chord of the circle is drawn at random. What is the chance that it is… |
-| 7 |  | – | – | – | – | 83% (20/24) | Consider a circle of radius 1. A chord of the circle is drawn at random. What is the proba… |
-| 8 |  | – | – | – | – | 75% (18/24) | Consider a circle of radius 5. A chord of the circle is drawn at random. What is the proba… |
-| 9 |  | – | – | – | – | 71% (17/24) | Given a circle of radius 2, find the probability that a chord drawn at random is longer th… |
-| 10 | H | – | – | – | – | 83% (20/24) | Consider a circle of radius 1. A chord of the circle is drawn at random. What is the proba… |
-| 11 |  | – | – | – | – | 79% (19/24) | Given a circle of radius 1, find the probability that a chord drawn at random is longer th… |
-| 12 |  | – | – | – | – | 58% (14/24) | Given a circle of radius r, compute the probability that a chord drawn at random is longer… |
-| 13 |  | – | – | – | – | 75% (18/24) | Consider a circle of radius 1. A chord of the circle is drawn at random. Find the probabil… |
-| 14 | H | – | – | – | – | 67% (16/24) | Consider a circle of radius 5. A chord of the circle is drawn at random. Find the probabil… |
-| 15 | H | – | – | – | – | 54% (13/24) | Consider a circle of radius 5. A chord of the circle is drawn at random. What is the chanc… |
-| 16 |  | – | – | – | – | 88% (21/24) | Given a circle of radius 5, what is the chance that a chord drawn at random is longer than… |
-| 17 |  | – | – | – | – | 75% (18/24) | Consider a circle of radius 1. A chord of the circle is drawn at random. Compute the proba… |
+| 0 |  | A:11 B:4 other:15 | 0.7 (15) | A:7 B:1 | A:10 C:1 none:19 | 42% (10/24) | Consider an equilateral triangle inscribed in a circle. Suppose a chord of the circle is c… |
+| 1 |  | A:17 B:3 C:4 other:6 | 0.7 (24) | A:14 B:2 C:3 | A:3 B:1 C:1 multiple:1 none:24 | 83% (20/24) | Given a circle of radius 1, what is the chance that a chord drawn at random is longer than… |
+| 2 | H | A:6 B:12 C:7 other:5 | 0.5 (25) | A:3 B:7 C:4 | A:3 B:3 C:5 none:19 | 75% (18/24) | Given a circle of radius 5, find the probability that a chord drawn at random is longer th… |
+| 3 |  | A:12 B:5 C:5 other:8 | 0.5 (22) | A:9 B:5 | A:4 C:5 none:21 | 67% (16/24) | Given a circle of radius 2, what is the chance that a chord drawn at random is longer than… |
+| 4 | H | A:6 B:7 C:9 other:8 | 0.4 (22) | A:3 B:3 C:5 | A:5 B:4 C:5 none:16 | 62% (15/24) | Given a circle of radius 2, find the probability that a chord drawn at random is longer th… |
+| 5 |  | A:9 B:9 C:3 other:9 | 0.4 (21) | A:8 B:9 C:1 | A:3 C:2 multiple:1 none:24 | 71% (17/24) | Given a circle of radius 2, compute the probability that a chord drawn at random is longer… |
+| 6 |  | A:18 B:2 other:10 | 0.9 (20) | A:16 | A:2 B:1 C:1 multiple:1 none:25 | 71% (17/24) | Consider a circle. A chord of the circle is drawn at random. What is the chance that it is… |
+| 7 |  | A:12 B:14 C:1 other:3 | 0.5 (27) | A:11 B:11 | A:1 B:2 C:2 none:25 | 83% (20/24) | Consider a circle of radius 1. A chord of the circle is drawn at random. What is the proba… |
+| 8 |  | A:8 B:12 C:2 other:8 | 0.5 (22) | A:6 B:9 C:1 | A:2 B:3 C:2 multiple:2 none:21 | 75% (18/24) | Consider a circle of radius 5. A chord of the circle is drawn at random. What is the proba… |
+| 9 |  | A:9 B:3 C:6 other:12 | 0.5 (18) | A:8 B:3 C:5 | A:2 B:1 C:1 none:26 | 71% (17/24) | Given a circle of radius 2, find the probability that a chord drawn at random is longer th… |
+| 10 | H | A:7 B:16 other:7 | 0.7 (23) | A:3 B:14 | A:7 multiple:2 none:21 | 83% (20/24) | Consider a circle of radius 1. A chord of the circle is drawn at random. What is the proba… |
+| 11 |  | A:17 B:1 C:5 other:7 | 0.7 (23) | A:10 B:1 C:4 | A:7 B:1 C:1 none:21 | 79% (19/24) | Given a circle of radius 1, find the probability that a chord drawn at random is longer th… |
+| 12 |  | A:18 B:1 C:3 other:8 | 0.8 (22) | A:11 | A:7 C:2 multiple:3 none:18 | 58% (14/24) | Given a circle of radius r, compute the probability that a chord drawn at random is longer… |
+| 13 |  | A:7 B:17 C:2 other:4 | 0.7 (26) | A:4 B:12 | A:4 B:5 C:2 none:19 | 75% (18/24) | Consider a circle of radius 1. A chord of the circle is drawn at random. Find the probabil… |
+| 14 | H | A:8 B:13 C:2 other:7 | 0.6 (23) | A:7 B:11 | A:1 B:2 C:2 multiple:2 none:23 | 67% (16/24) | Consider a circle of radius 5. A chord of the circle is drawn at random. Find the probabil… |
+| 15 | H | A:6 B:8 other:15 multiple:1 | 0.6 (14) | A:3 B:8 | A:7 C:1 multiple:1 none:21 | 54% (13/24) | Consider a circle of radius 5. A chord of the circle is drawn at random. What is the chanc… |
+| 16 |  | A:6 B:12 C:8 other:4 | 0.5 (26) | A:5 B:9 C:4 | A:4 B:3 C:4 none:19 | 88% (21/24) | Given a circle of radius 5, what is the chance that a chord drawn at random is longer than… |
+| 17 |  | A:5 B:20 C:2 other:3 | 0.7 (27) | A:4 B:16 | A:1 B:4 C:2 none:23 | 75% (18/24) | Consider a circle of radius 1. A chord of the circle is drawn at random. Compute the proba… |
+
+### Variation of the neutral approach
+
+| label |  |  |
+|---|---|---|
+| final number | pooled mix over samples labeled A/B/C (phrasings with at least 2 such samples) | A:182 B:159 C:59 |
+| final number | does the mix differ across phrasings more than with shuffled labels? (18 phrasings, 400 samples) | spread 131.7 (df 34); 0.0% of 5000 shufflings of the labels across phrasings spread as much or more |
+| final number | agreement within a phrasing: mean share of the phrasing's most frequent approach (18 phrasings) | 0.61; 0.51 if every sample were an independent draw from the pooled mix |
+| final number | phrasings whose samples all land on the same approach | 0/18 |
+| stated method (check) | pooled mix over samples labeled A/B/C (phrasings with at least 2 such samples) | A:73 B:30 C:39 |
+| stated method (check) | does the mix differ across phrasings more than with shuffled labels? (18 phrasings, 142 samples) | spread 51.6 (df 34); 1.9% of 5000 shufflings of the labels across phrasings spread as much or more |
+| stated method (check) | agreement within a phrasing: mean share of the phrasing's most frequent approach (18 phrasings) | 0.58; 0.58 if every sample were an independent draw from the pooled mix |
+| stated method (check) | phrasings whose samples all land on the same approach | 1/18 |
 
 ### Scorer diagnostics
 
 |  |  |
 |---|---|
-| final answer found by | boxed:413 cued:12 fallback:4 boxed_other:3 |
-| mentions the paradox / 'depends' | 2% (8/432) |
-| answers that hit the token limit | 2% (10/432) |
-| mean answer length (tokens) | 584 |
+| final answer found by | boxed:913 cued:43 boxed_other:8 fallback:7 multiple:1 |
+| mentions the paradox / 'depends' | 1% (14/972) |
+| answers that hit the token limit | 2% (15/972) |
+| mean answer length (tokens) | 603 |
