@@ -79,3 +79,38 @@ The 3B follows a stated approach about twice as often as the 1.5B, mostly for B 
 The 1/4s are almost always worked out. Most 1/3s are not: the answer finds the 120° angle and divides it by 360°, or computes 1/6 or 2/3 and boxes 1/3. The 1/2s split between a real computation from the distance and a box that contradicts the working.
 
 Next stage tests: we test whether steering the stated reading and steering the final number give different kinds of answers.
+
+## 2026-10-09 — stage 1 on the 7B
+
+- Runs: `s1_generate.py --model 7b --set labeled` (greedy, 768 tokens, 432 answers) and `--set neutral --n_samples 30 --max_new_tokens 1024` (T = 0.7, 18 phrasings × 30 = 540). The 7B loads in 4-bit nf4 (bitsandbytes) with bf16 compute at batch 2, so these numbers are for the quantized model.
+- Labeled, final number follows the labeled approach: 71% (307/432); A 63%, B 94%, C 56%. Non-canonical phrasings 73%, canonical problem statement 42% (10/24), held-out phrasings 68%, held-out descriptions 67%, held-out phrasing and description 64% (29/45). Stated-method check: 57%. 15% of labeled answers end in a non-canonical number (1.5B 54%, 3B 25%). Number and stated method agree in 96% of the 233 labeled answers where both are readable. Most misses: C prompts ending in 1/2 (40/144), and A prompts ending in a non-canonical number (46/144). One C description (c3) is followed in 2/18.
+- Neutral, 540 samples: final number A 182, B 159, C 59, other 139, multiple 1. 280 of the 400 that end in 1/3, 1/2 or 1/4 state no method. Stated-method check: A 73, B 30, C 39, multiple 13, none 385.
+- Variation across phrasings: none of 5000 label shuffles spread as much as the real mix (spread 131.7, df 34); on the stated method, 1.9% did. Within a phrasing, the mean majority share is 0.61, against 0.51 for independent draws. Unlike the 1.5B and 3B, the 7B's choice depends on the problem statement. For example, phrasing 6 gives 18 A of 20 canonical, phrasing 17 gives 20 B of 27, and phrasing 12 gives 18 A of 22.
+- 2% of answers hit the token limit (15/972). Full tables are in `results/s1/summary.md`.
+
+## 2026-10-09 — hand judgment of the 7B neutral answers ending in 1/3, 1/2 or 1/4
+
+- What was judged: the 400 of 540 samples in `neutral_qwen7b.jsonl` whose final number is 1/3, 1/2 or 1/4. Same rubric and rules as for the 3B: I read each answer myself, with no script or API, and recorded the variable, derived or recalled, mentions of the paradox, and a reason. Results are in `results/s1/judge_qwen7b.jsonl`. 30 judged answers with full text (10 per number, seed 0) are in `results/s1/judge_check_qwen7b.md`.
+- Overall: 342 derived, 58 recalled (3B: 200 / 161). No answer mentions the paradox or says the answer depends on how the chord is chosen (0/400).
+- By number: 1/3 → 142 derived, 40 recalled. 1/2 → 143 derived, 16 recalled. 1/4 → 57 derived, 2 recalled.
+- By variable: angle at the center 142 derived / 45 recalled; distance from the center 143 / 1; midpoint in the disk 57 / 9; none 0 / 1; other 0 / 2 (a segment-area ratio cut off at the token limit, where the scorer read the 1/3 inside 1/3 − √3/(4π)).
+- Number × variable: as with the 3B, every derived 1/3 uses the angle, every derived 1/2 the distance, and every derived 1/4 the midpoint.
+  - Recalled 1/3s come from the angle (37), none (1) and the segment area (2). The angle ones mostly compute 1/6 or 2/3 and box 1/3, take the 120° threshold over 360° as the probability, or use wrong ranges that happen to land on 1/3.
+  - Recalled 1/2s come from the angle (8: wrong ranges summed to 180°), the midpoint (7: wrong thresholds or area ratios that give 1/2), and the distance (1: reversed condition).
+  - Recalled 1/4s come from the midpoint (2: false reasons for the r/2 threshold).
+- By phrasing (derived / recalled):
+
+| phrasing | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| derived | 7 | 20 | 20 | 19 | 21 | 18 | 17 | 24 | 22 | 17 | 19 | 16 | 15 | 24 | 19 | 12 | 25 | 27 |
+| recalled | 8 | 4 | 5 | 3 | 1 | 3 | 3 | 3 | 0 | 1 | 4 | 7 | 7 | 2 | 4 | 2 | 1 | 0 |
+
+- Derived share by threshold phrasing:
+
+| threshold phrasing | phrasings | derived share | by number (derived / recalled) |
+|---|---|---|---|
+| triangle | 0, 1, 3, 6, 9, 11, 15 | 79% (108/136) | 1/3 70 / 20; 1/2 19 / 7; 1/4 19 / 1 |
+| r√3 | 2, 4, 7, 12, 13, 14, 17 | 87% (150/172) | 1/3 47 / 15; 1/2 78 / 6; 1/4 25 / 1 |
+| numeric | 5, 8, 10, 16 | 91% (84/92) | 1/3 25 / 5; 1/2 46 / 3; 1/4 13 / 0 |
+
+The 7B works out its number far more often than the 3B (86% against 55%). The 1/3s are still the weakest: 22% of them are recalled, against 10% of 1/2s and 3% of 1/4s. Triangle phrasings get the lowest derived share. They lead to 1/3 more often (90 of 136, against 30 of 92 for numeric thresholds), and the triangle's 120° angle invites the threshold-over-360° shortcut. The canonical problem statement (phrasing 0) is the only one where recalled answers outnumber derived ones (8 to 7).
