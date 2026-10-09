@@ -2,7 +2,7 @@
 
 20 per approach, round-robin over its descriptions (seed 0). number = label from the final number (primary); stated method = label from the method markers (check).
 
-## w00_a0 — wording 0, sample 0 — labeled **A** / a0
+## w00_a0 — phrasing 0, sample 0 — labeled **A** / a0
 
 - number: **other** (value 0.6667, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -27,7 +27,7 @@ Therefore, the probability that a randomly chosen chord is longer than the side 
 Thus, the probability that a randomly chosen chord is longer than a side of the equilateral triangle is \(\boxed{\frac{2}{3}}\).
 ```
 
-## w09_a0 — wording 9, sample 0 — labeled **A** / a0
+## w09_a0 — phrasing 9, sample 0 — labeled **A** / a0
 
 - number: **other** (value 0.6667, boxed)
 - stated method: **A** (hits {'A': 1, 'B': 0, 'C': 0})
@@ -60,7 +60,7 @@ To solve the problem, we need to determine the probability that a randomly drawn
 Thus, the probability that a randomly drawn chord is longer than the side of an equilateral triangle inscribed in the circle is \(\boxed{\frac{2}{3}}\).
 ```
 
-## w11_a0 — wording 11, sample 0 — labeled **A** / a0
+## w11_a0 — phrasing 11, sample 0 — labeled **A** / a0
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 3})
@@ -99,7 +99,7 @@ Therefore, the probability that a randomly drawn chord is longer than the side o
 \[ \boxed{\frac{1}{4}} \]
 ```
 
-## w00_a1 — wording 0, sample 0 — labeled **A** / a1
+## w00_a1 — phrasing 0, sample 0 — labeled **A** / a1
 
 - number: **A** (value 0.3333, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -130,7 +130,7 @@ To solve the problem, we need to determine the probability that a randomly chose
 Therefore, the probability that a randomly chosen chord is longer than a side of the equilateral triangle is \(\boxed{\frac{1}{3}}\).
 ```
 
-## w13_a1 — wording 13, sample 0 — labeled **A** / a1
+## w13_a1 — phrasing 13, sample 0 — labeled **A** / a1
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 2})
@@ -168,7 +168,7 @@ Thus, the probability that a randomly drawn chord is longer than \(\sqrt{3}\) ti
 \[ \boxed{\frac{1}{4}} \]
 ```
 
-## w16_a1 — wording 16, sample 0 — labeled **A** / a1
+## w16_a1 — phrasing 16, sample 0 — labeled **A** / a1
 
 - number: **B** (value 0.5, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -213,7 +213,7 @@ The probability that a randomly drawn chord in a circle of radius 5 is longer th
 \[ \boxed{\frac{1}{2}} \]
 ```
 
-## w03_a2 — wording 3, sample 0 — labeled **A** / a2
+## w03_a2 — phrasing 3, sample 0 — labeled **A** / a2
 
 - number: **A** (value 0.3333, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -246,7 +246,7 @@ Thus, the probability that a randomly drawn chord is longer than the side of an 
 \[ \boxed{\frac{1}{3}} \]
 ```
 
-## w04_a2 — wording 4, sample 0 — labeled **A** / a2
+## w04_a2 — phrasing 4, sample 0 — labeled **A** / a2
 
 - number: **A** (value 0.3333, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 1})
@@ -277,7 +277,7 @@ The probability is the ratio of the favorable range to the total range:
 Thus, the probability that a randomly drawn chord is longer than \(\sqrt{3}\) times the radius is \(\boxed{\frac{1}{3}}\).
 ```
 
-## w13_a2 — wording 13, sample 0 — labeled **A** / a2
+## w13_a2 — phrasing 13, sample 0 — labeled **A** / a2
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 3})
@@ -303,7 +303,7 @@ The area of the original circle is \(\pi \times 1^2 = \pi\). The area of the sma
 Thus, the probability that a randomly drawn chord is longer than \(\sqrt{3}\) times the radius is \(\boxed{\frac{1}{4}}\).
 ```
 
-## w10_a3 — wording 10, sample 0 — labeled **A** / a3
+## w10_a3 — phrasing 10, sample 0 — labeled **A** / a3
 
 - number: **other** (value 0.6667, boxed)
 - stated method: **A** (hits {'A': 3, 'B': 0, 'C': 0})
@@ -374,7 +374,7 @@ The probability that a randomly drawn chord of a unit circle is longer than \(\s
 \]
 ```
 
-## w11_a3 — wording 11, sample 0 — labeled **A** / a3
+## w11_a3 — phrasing 11, sample 0 — labeled **A** / a3
 
 - number: **B** (value 0.5, boxed)
 - stated method: **A** (hits {'A': 2, 'B': 0, 'C': 0})
@@ -433,7 +433,7 @@ Thus, the probability that a randomly drawn chord is longer than the side of an 
 \]
 ```
 
-## w17_a3 — wording 17, sample 0 — labeled **A** / a3
+## w17_a3 — phrasing 17, sample 0 — labeled **A** / a3
 
 - number: **other** (value 0.6667, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -487,7 +487,7 @@ To solve the problem, we need to determine the probability that a randomly drawn
 Therefore, the probability that a randomly drawn chord is longer than \(\sqrt{3}\) times the radius is \(\boxed{\frac{2}{3}}\).
 ```
 
-## w05_a4 — wording 5, sample 0 — labeled **A** / a4
+## w05_a4 — phrasing 5, sample 0 — labeled **A** / a4
 
 - number: **other** (value 0.6667, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -528,7 +528,7 @@ Thus, the probability is:
 Therefore, the probability that a randomly drawn chord is longer than \(2\sqrt{3}\) is \(\boxed{\frac{2}{3}}\).
 ```
 
-## w17_a4 — wording 17, sample 0 — labeled **A** / a4
+## w17_a4 — phrasing 17, sample 0 — labeled **A** / a4
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 3})
@@ -564,7 +564,7 @@ Thus, the probability is:
 \[ \boxed{\frac{1}{4}} \]
 ```
 
-## w14_a5 — wording 14, sample 0 — labeled **A** / a5, held-out desc
+## w14_a5 — phrasing 14, sample 0 — labeled **A** / a5, held-out desc
 
 - number: **B** (value 0.5, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -629,7 +629,7 @@ The probability that a randomly drawn chord is longer than \(5\sqrt{3}\) is:
 \]
 ```
 
-## w15_a5 — wording 15, sample 0 — labeled **A** / a5, held-out desc
+## w15_a5 — phrasing 15, sample 0 — labeled **A** / a5, held-out desc
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 3})
@@ -663,7 +663,7 @@ Thus, the probability is:
 \[ \boxed{\frac{1}{4}} \]
 ```
 
-## w15_a6 — wording 15, sample 0 — labeled **A** / a6, held-out desc
+## w15_a6 — phrasing 15, sample 0 — labeled **A** / a6, held-out desc
 
 - number: **other** (value 0.75, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -709,7 +709,7 @@ The final answer is:
 \]
 ```
 
-## w17_a6 — wording 17, sample 0 — labeled **A** / a6, held-out desc
+## w17_a6 — phrasing 17, sample 0 — labeled **A** / a6, held-out desc
 
 - number: **other** (value 1.0, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -735,7 +735,7 @@ Thus, the probability that a randomly drawn chord is longer than \(\sqrt{3}\) ti
 \]
 ```
 
-## w04_a7 — wording 4, sample 0 — labeled **A** / a7, held-out desc
+## w04_a7 — phrasing 4, sample 0 — labeled **A** / a7, held-out desc
 
 - number: **other** (value 0.125, boxed)
 - stated method: **B** (hits {'A': 0, 'B': 2, 'C': 0})
@@ -771,7 +771,7 @@ Thus, the probability that a randomly drawn chord is longer than \(\sqrt{3}\) ti
 \[ \boxed{\frac{1}{8}} \]
 ```
 
-## w16_a7 — wording 16, sample 0 — labeled **A** / a7, held-out desc
+## w16_a7 — phrasing 16, sample 0 — labeled **A** / a7, held-out desc
 
 - number: **other** (value 12.5, fallback)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -812,7 +812,7 @@ The area of the band is:
 \[ 25\pi - \frac{25(4\pi - 3\sqrt{3})}{6} = \frac{150\pi -
 ```
 
-## w02_b0 — wording 2, sample 0 — labeled **B** / b0
+## w02_b0 — phrasing 2, sample 0 — labeled **B** / b0
 
 - number: **B** (value 0.5, boxed)
 - stated method: **B** (hits {'A': 0, 'B': 1, 'C': 0})
@@ -843,7 +843,7 @@ The distance \(d\) can range from 0 to 5 (the radius of the circle). The probabi
 Therefore, the probability that a randomly drawn chord is longer than \(5\sqrt{3}\) is \(\boxed{\frac{1}{2}}\).
 ```
 
-## w08_b0 — wording 8, sample 0 — labeled **B** / b0
+## w08_b0 — phrasing 8, sample 0 — labeled **B** / b0
 
 - number: **other** (value 1.0, fallback)
 - stated method: **B** (hits {'A': 0, 'B': 3, 'C': 0})
@@ -917,7 +917,7 @@ x^2 > \frac{75 - 100\sqrt{3}}{4}
 The probability that the chord is longer than \(5\sqrt{3}\) is the ratio of the favorable length to the total possible
 ```
 
-## w16_b0 — wording 16, sample 0 — labeled **B** / b0
+## w16_b0 — phrasing 16, sample 0 — labeled **B** / b0
 
 - number: **B** (value 0.5, boxed)
 - stated method: **B** (hits {'A': 0, 'B': 2, 'C': 0})
@@ -955,7 +955,7 @@ To solve this problem, we need to understand the geometry of the situation and t
 Therefore, the probability that a chord drawn at random is longer than \(5\sqrt{3}\) is \(\boxed{\frac{1}{2}}\).
 ```
 
-## w03_b1 — wording 3, sample 0 — labeled **B** / b1
+## w03_b1 — phrasing 3, sample 0 — labeled **B** / b1
 
 - number: **B** (value 0.5, boxed)
 - stated method: **B** (hits {'A': 0, 'B': 1, 'C': 0})
@@ -990,7 +990,7 @@ Therefore, the probability that a randomly drawn chord is longer than the side o
 \[ \boxed{\frac{1}{2}} \]
 ```
 
-## w05_b1 — wording 5, sample 0 — labeled **B** / b1
+## w05_b1 — phrasing 5, sample 0 — labeled **B** / b1
 
 - number: **B** (value 0.5, boxed)
 - stated method: **B** (hits {'A': 0, 'B': 1, 'C': 0})
@@ -1040,7 +1040,7 @@ The probability that a randomly drawn chord in a circle of radius 2 is longer th
 \[ \boxed{\frac{1}{2}} \]
 ```
 
-## w07_b1 — wording 7, sample 0 — labeled **B** / b1
+## w07_b1 — phrasing 7, sample 0 — labeled **B** / b1
 
 - number: **B** (value 0.5, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -1064,7 +1064,7 @@ So, the chord is longer than \(\sqrt{3}\) times the radius if the distance \(d\)
 Therefore, the probability that a randomly drawn chord is longer than \(\sqrt{3}\) times the radius is \(\boxed{\frac{1}{2}}\).
 ```
 
-## w02_b2 — wording 2, sample 0 — labeled **B** / b2
+## w02_b2 — phrasing 2, sample 0 — labeled **B** / b2
 
 - number: **B** (value 0.5, boxed)
 - stated method: **B** (hits {'A': 0, 'B': 1, 'C': 0})
@@ -1095,7 +1095,7 @@ The distance \(d\) can range from 0 to 5, so the favorable range for \(d\) is fr
 Thus, the probability that a chord drawn at random is longer than \(\sqrt{3} \times 5\) is \(\boxed{\frac{1}{2}}\).
 ```
 
-## w10_b2 — wording 10, sample 0 — labeled **B** / b2
+## w10_b2 — phrasing 10, sample 0 — labeled **B** / b2
 
 - number: **B** (value 0.5, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -1138,7 +1138,7 @@ The probability that a randomly drawn chord of a circle of radius 1 is longer th
 \[ \boxed{\frac{1}{2}} \]
 ```
 
-## w15_b2 — wording 15, sample 0 — labeled **B** / b2
+## w15_b2 — phrasing 15, sample 0 — labeled **B** / b2
 
 - number: **other** (value –, boxed_other)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -1163,7 +1163,7 @@ Thus, the probability that a randomly drawn chord is longer than the side of an 
 \[ \boxed{\frac{\sqrt{2}}{2}} \]
 ```
 
-## w10_b3 — wording 10, sample 0 — labeled **B** / b3
+## w10_b3 — phrasing 10, sample 0 — labeled **B** / b3
 
 - number: **B** (value 0.5, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -1212,7 +1212,7 @@ Therefore, the probability that a randomly drawn chord is longer than \(\sqrt{3}
 \]
 ```
 
-## w11_b3 — wording 11, sample 0 — labeled **B** / b3
+## w11_b3 — phrasing 11, sample 0 — labeled **B** / b3
 
 - number: **other** (value –, boxed_other)
 - stated method: **B** (hits {'A': 0, 'B': 2, 'C': 0})
@@ -1251,7 +1251,7 @@ Thus, the probability that a chord drawn at random is longer than the side of an
 \]
 ```
 
-## w12_b3 — wording 12, sample 0 — labeled **B** / b3
+## w12_b3 — phrasing 12, sample 0 — labeled **B** / b3
 
 - number: **B** (value 0.5, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 1})
@@ -1280,7 +1280,7 @@ Thus, the probability that a randomly drawn chord is longer than \( r\sqrt{3} \)
 \[ \boxed{\frac{1}{2}}. \]
 ```
 
-## w09_b4 — wording 9, sample 0 — labeled **B** / b4
+## w09_b4 — phrasing 9, sample 0 — labeled **B** / b4
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 2})
@@ -1321,7 +1321,7 @@ To solve the problem, we need to determine the probability that a randomly drawn
 Therefore, the probability that a randomly drawn chord is longer than the side of an equilateral triangle inscribed in the circle is \(\boxed{\frac{1}{4}}\).
 ```
 
-## w14_b4 — wording 14, sample 0 — labeled **B** / b4
+## w14_b4 — phrasing 14, sample 0 — labeled **B** / b4
 
 - number: **B** (value 0.5, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -1354,7 +1354,7 @@ Now, we need to find the probability that a randomly chosen radius is within \(\
 Thus, the probability that a randomly drawn chord is longer than \(5\sqrt{3}\) is \(\boxed{\frac{1}{2}}\).
 ```
 
-## w02_b5 — wording 2, sample 0 — labeled **B** / b5, held-out desc
+## w02_b5 — phrasing 2, sample 0 — labeled **B** / b5, held-out desc
 
 - number: **B** (value 0.5, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -1372,7 +1372,7 @@ The perpendicular distance \(d\) from the center to the chord can range from 0 t
 Thus, the probability that a randomly drawn chord is longer than \(\sqrt{3}\) times the radius is \(\boxed{\frac{1}{2}}\).
 ```
 
-## w15_b5 — wording 15, sample 0 — labeled **B** / b5, held-out desc
+## w15_b5 — phrasing 15, sample 0 — labeled **B** / b5, held-out desc
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 1})
@@ -1406,7 +1406,7 @@ Thus, the probability is:
 \[ \boxed{\frac{1}{4}} \]
 ```
 
-## w06_b6 — wording 6, sample 0 — labeled **B** / b6, held-out desc
+## w06_b6 — phrasing 6, sample 0 — labeled **B** / b6, held-out desc
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 3})
@@ -1450,7 +1450,7 @@ Thus, the probability that a randomly drawn chord is longer than the side of an 
 \]
 ```
 
-## w14_b6 — wording 14, sample 0 — labeled **B** / b6, held-out desc
+## w14_b6 — phrasing 14, sample 0 — labeled **B** / b6, held-out desc
 
 - number: **B** (value 0.5, boxed)
 - stated method: **B** (hits {'A': 0, 'B': 1, 'C': 0})
@@ -1492,7 +1492,7 @@ Thus, the probability that a randomly drawn chord is longer than \(5\sqrt{3}\) i
 \[ \boxed{\frac{1}{2}} \]
 ```
 
-## w02_b7 — wording 2, sample 0 — labeled **B** / b7, held-out desc
+## w02_b7 — phrasing 2, sample 0 — labeled **B** / b7, held-out desc
 
 - number: **A** (value 0.3333, boxed)
 - stated method: **B** (hits {'A': 0, 'B': 2, 'C': 0})
@@ -1523,7 +1523,7 @@ To solve the problem, we need to determine the probability that a randomly drawn
 Thus, the probability that a randomly drawn chord is longer than \(\sqrt{3}\) times the radius is \(\boxed{\frac{1}{3}}\).
 ```
 
-## w09_b7 — wording 9, sample 0 — labeled **B** / b7, held-out desc
+## w09_b7 — phrasing 9, sample 0 — labeled **B** / b7, held-out desc
 
 - number: **C** (value 0.25, boxed)
 - stated method: **multiple** (hits {'A': 0, 'B': 1, 'C': 2})
@@ -1575,7 +1575,7 @@ The probability that a chord drawn at random is longer than the side of an equil
 \]
 ```
 
-## w05_c0 — wording 5, sample 0 — labeled **C** / c0
+## w05_c0 — phrasing 5, sample 0 — labeled **C** / c0
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 3})
@@ -1599,7 +1599,7 @@ The probability that a randomly chosen chord is longer than \( 2\sqrt{3} \) is t
 Thus, the probability that a chord drawn at random is longer than \( 2\sqrt{3} \) is \(\boxed{\frac{1}{4}}\).
 ```
 
-## w07_c0 — wording 7, sample 0 — labeled **C** / c0
+## w07_c0 — phrasing 7, sample 0 — labeled **C** / c0
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 2})
@@ -1627,7 +1627,7 @@ The area of the circle is \(\pi \times 1^2 = \pi\). The area of the smaller circ
 Therefore, the probability that a randomly chosen chord is longer than \(\sqrt{3}\) times the radius is \(\boxed{\frac{1}{4}}\).
 ```
 
-## w15_c0 — wording 15, sample 0 — labeled **C** / c0
+## w15_c0 — phrasing 15, sample 0 — labeled **C** / c0
 
 - number: **other** (value 0.75, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 3})
@@ -1666,7 +1666,7 @@ Thus, the probability that a randomly chosen chord is longer than the side of an
 \]
 ```
 
-## w06_c1 — wording 6, sample 0 — labeled **C** / c1
+## w06_c1 — phrasing 6, sample 0 — labeled **C** / c1
 
 - number: **other** (value 0.75, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 4})
@@ -1715,7 +1715,7 @@ Thus, the probability that a randomly drawn chord is longer than the side of an 
 \]
 ```
 
-## w09_c1 — wording 9, sample 0 — labeled **C** / c1
+## w09_c1 — phrasing 9, sample 0 — labeled **C** / c1
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 1})
@@ -1756,7 +1756,7 @@ To solve the problem, we need to determine the probability that a randomly drawn
 Therefore, the probability that a randomly drawn chord is longer than the side of an equilateral triangle inscribed in the circle is \(\boxed{\frac{1}{4}}\).
 ```
 
-## w17_c1 — wording 17, sample 0 — labeled **C** / c1
+## w17_c1 — phrasing 17, sample 0 — labeled **C** / c1
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 3})
@@ -1787,7 +1787,7 @@ Therefore, the probability that a randomly drawn chord is longer than \(\sqrt{3}
 \[\boxed{\frac{1}{4}}.\]
 ```
 
-## w02_c2 — wording 2, sample 0 — labeled **C** / c2
+## w02_c2 — phrasing 2, sample 0 — labeled **C** / c2
 
 - number: **other** (value 1.0, boxed)
 - stated method: **B** (hits {'A': 0, 'B': 1, 'C': 0})
@@ -1818,7 +1818,7 @@ To solve the problem, we need to determine the probability that a randomly drawn
 Thus, the final answer is \(\boxed{1 - \frac{\sqrt{3}}{2}}\).
 ```
 
-## w11_c2 — wording 11, sample 0 — labeled **C** / c2
+## w11_c2 — phrasing 11, sample 0 — labeled **C** / c2
 
 - number: **other** (value 0.75, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 1})
@@ -1862,7 +1862,7 @@ Therefore, the probability that a chord drawn at random is longer than the side 
 \]
 ```
 
-## w15_c2 — wording 15, sample 0 — labeled **C** / c2
+## w15_c2 — phrasing 15, sample 0 — labeled **C** / c2
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 3})
@@ -1904,7 +1904,7 @@ Therefore, the probability that a randomly drawn chord is longer than the side o
 \]
 ```
 
-## w03_c3 — wording 3, sample 0 — labeled **C** / c3
+## w03_c3 — phrasing 3, sample 0 — labeled **C** / c3
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 3})
@@ -1941,7 +1941,7 @@ Therefore, the probability that a randomly drawn chord is longer than the side o
 \]
 ```
 
-## w07_c3 — wording 7, sample 0 — labeled **C** / c3
+## w07_c3 — phrasing 7, sample 0 — labeled **C** / c3
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 4})
@@ -1971,7 +1971,7 @@ The probability that a randomly drawn chord is longer than \(\sqrt{3}\) times th
 Thus, the probability that a randomly drawn chord is longer than \(\sqrt{3}\) times the radius is \(\boxed{\frac{1}{4}}\).
 ```
 
-## w17_c3 — wording 17, sample 0 — labeled **C** / c3
+## w17_c3 — phrasing 17, sample 0 — labeled **C** / c3
 
 - number: **other** (value 1.0, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -1991,7 +1991,7 @@ To solve the problem, we need to determine the probability that a randomly drawn
 Therefore, the probability is \(\boxed{1}\).
 ```
 
-## w13_c4 — wording 13, sample 0 — labeled **C** / c4
+## w13_c4 — phrasing 13, sample 0 — labeled **C** / c4
 
 - number: **B** (value 0.5, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -2022,7 +2022,7 @@ Therefore, the probability that a randomly drawn chord is longer than \(\sqrt{3}
 \[ \boxed{\frac{1}{2}} \]
 ```
 
-## w14_c4 — wording 14, sample 0 — labeled **C** / c4
+## w14_c4 — phrasing 14, sample 0 — labeled **C** / c4
 
 - number: **B** (value 0.5, boxed)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -2048,7 +2048,7 @@ The probability is the ratio of the favorable range to the total range. The favo
 Thus, the probability that a randomly chosen chord is longer than \(\sqrt{3}\) times the radius is \(\boxed{\frac{1}{2}}\).
 ```
 
-## w02_c5 — wording 2, sample 0 — labeled **C** / c5, held-out desc
+## w02_c5 — phrasing 2, sample 0 — labeled **C** / c5, held-out desc
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 4})
@@ -2073,7 +2073,7 @@ Thus, the probability is:
 \[\boxed{\frac{1}{4}}.\]
 ```
 
-## w17_c5 — wording 17, sample 0 — labeled **C** / c5, held-out desc
+## w17_c5 — phrasing 17, sample 0 — labeled **C** / c5, held-out desc
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 3})
@@ -2100,7 +2100,7 @@ Thus, the probability that a randomly drawn chord is longer than \(\sqrt{3}\) ti
 \[\boxed{\frac{1}{4}}.\]
 ```
 
-## w02_c6 — wording 2, sample 0 — labeled **C** / c6, held-out desc
+## w02_c6 — phrasing 2, sample 0 — labeled **C** / c6, held-out desc
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 3})
@@ -2151,7 +2151,7 @@ Thus, the probability is:
 \]
 ```
 
-## w12_c6 — wording 12, sample 0 — labeled **C** / c6, held-out desc
+## w12_c6 — phrasing 12, sample 0 — labeled **C** / c6, held-out desc
 
 - number: **multiple** (value –, multiple)
 - stated method: **none** (hits {'A': 0, 'B': 0, 'C': 0})
@@ -2189,7 +2189,7 @@ The area of the region where the chord is longer than \( r\sqrt{3} \) is the are
 \text{Area of region} = \pi r^2 - 2 r^2 \left(
 ```
 
-## w00_c7 — wording 0, sample 0 — labeled **C** / c7, held-out desc
+## w00_c7 — phrasing 0, sample 0 — labeled **C** / c7, held-out desc
 
 - number: **A** (value 0.3333, boxed)
 - stated method: **A** (hits {'A': 4, 'B': 0, 'C': 0})
@@ -2221,7 +2221,7 @@ To solve this problem, we need to understand the relationship between the chord 
 Therefore, the probability that a randomly chosen chord is longer than a side of the equilateral triangle is \(\boxed{\frac{1}{3}}\).
 ```
 
-## w04_c7 — wording 4, sample 0 — labeled **C** / c7, held-out desc
+## w04_c7 — phrasing 4, sample 0 — labeled **C** / c7, held-out desc
 
 - number: **C** (value 0.25, boxed)
 - stated method: **C** (hits {'A': 0, 'B': 0, 'C': 4})

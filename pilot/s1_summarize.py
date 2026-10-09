@@ -8,12 +8,12 @@ hand reading. The next-word check (nextword_*.jsonl) is not read. Primary label 
 stated in the text (approach_text) is kept as a check next to it. Rates are reported side by side; there are no
 thresholds here.
 
-Per model: labeled accuracy (all / non-canonical wordings / canonical / held-out splits), labeled x answered
-confusion, text/number agreement, neutral approach distribution per wording (with the samples that end in a
-canonical number but state no method), and two variation readings on the number label: across wordings (does the
-mix of approaches differ between wordings more than it does when the labels are shuffled across wordings) and
-across samples (how often samples of one wording land on the same approach, next to what independent draws from
-the pooled mix would give).
+Per model: labeled accuracy (all / non-canonical phrasings / canonical / held-out splits), labeled x answered
+confusion, text/number agreement, neutral approach distribution per problem statement (with the samples that end in
+a canonical number but state no method), and two variation readings on the number label: across phrasings (does the
+mix of approaches differ between phrasings more than it does when the labels are shuffled across phrasings) and
+across samples (how often samples of one phrasing land on the same approach, next to what independent draws from
+the pooled mix would give). Prose says "phrasing" / "problem statement"; file names and keys keep "wording".
 """
 import random
 from collections import Counter, defaultdict
@@ -50,7 +50,7 @@ def load(tag):
     meta, data = {}, {}
     for kind in ["labeled", "neutral"]:
         rows = read_jsonl(S1 / f"{kind}_{tag}.jsonl")
-        meta[kind] = next((r for r in rows if r.get("kind") == "meta"), None)
+        meta[kind] = [r for r in rows if r.get("kind") == "meta"]  # one per generating run
         data[kind] = [r for r in rows if r.get("kind") == "answer"]
         for r in data[kind]:  # re-score from the text so scorer changes apply without regenerating
             r.update(score(r["answer"]))
@@ -125,11 +125,12 @@ def section(tag, meta, data):
     L, N = data["labeled"], data["neutral"]
     out = [f"## {tag}", ""]
     runs = []
-    for k, m in meta.items():
-        if m:
-            runs.append(f"{k}: {m['time']}, {m['device']} {m['dtype']}, T={m['temperature']}, "
-                        f"max_new_tokens={m['max_new_tokens']}, repetition_penalty={m.get('repetition_penalty')}, "
-                        f"n={len(data[k])} answers")
+    for k, ms in meta.items():
+        for m in ms:
+            runs.append(f"{k}: {m['time']}, {m['device']} {m['dtype']}, T={m['temperature']}, n_samples={m['n_samples']}, "
+                        f"max_new_tokens={m['max_new_tokens']}, repetition_penalty={m.get('repetition_penalty')}")
+        if ms:
+            runs[-1] += f" ({len(data[k])} {k} answers in all)"
     out += ["Runs: " + "; ".join(runs) if runs else "No runs found.", ""]
 
     # 1. side by side: labeled follow rate next to neutral share, number label first, stated method as a check
@@ -151,11 +152,11 @@ def section(tag, meta, data):
             md_table(["approach", "labeled, number", "neutral, number", "labeled, stated (check)", "neutral, stated (check)"], rows), ""]
 
     if L:
-        subsets = [("all wordings", L), ("non-canonical wordings (id != 0)", [r for r in L if r["wording_id"] != 0]),
-                   ("canonical wording (id 0)", [r for r in L if r["wording_id"] == 0]),
-                   ("held-out wordings", [r for r in L if r["heldout_wording"]]),
+        subsets = [("all phrasings", L), ("non-canonical phrasings (id != 0)", [r for r in L if r["wording_id"] != 0]),
+                   ("canonical problem statement (id 0)", [r for r in L if r["wording_id"] == 0]),
+                   ("held-out phrasings", [r for r in L if r["heldout_wording"]]),
                    ("held-out descriptions", [r for r in L if r["heldout_desc"]]),
-                   ("held-out wording and description", [r for r in L if r["heldout_wording"] and r["heldout_desc"]])]
+                   ("held-out phrasing and description", [r for r in L if r["heldout_wording"] and r["heldout_desc"]])]
         rows = [[name, len(rs), acc(rs, "approach_number"), acc(rs, "approach_text")] for name, rs in subsets]
         out += ["### Labeled accuracy (answer label = labeled approach)", "",
                 md_table(["subset", "n", "number", "stated (check)"], rows), ""]
@@ -194,7 +195,7 @@ def section(tag, meta, data):
             for r in L:
                 by[r[key]].append(r)
             rows += [[f"{key}={k}", acc(rs), acc(rs, "approach_text")] for k, rs in sorted(by.items())]
-        out += ["### Follow rate per clause frame / position / wording split", "", md_table(["", "number", "stated (check)"], rows), ""]
+        out += ["### Follow rate per clause frame / position / phrasing split", "", md_table(["", "number", "stated (check)"], rows), ""]
 
     # 3. neutral distribution per wording
     rows = []
@@ -209,39 +210,41 @@ def section(tag, meta, data):
         rows.append([wid, "H" if w["heldout_wording"] else "", dist_str(ns) if ns else "–", maj, silent_s if ns else "–",
                      dist_str(ns, "approach_text") if ns else "–", acc(ls) if ls else "–",
                      w["text"][:90] + ("…" if len(w["text"]) > 90 else "")])
-    out += ["### Neutral samples per wording (H = held-out wording)", "",
-            "majority: share of the most frequent approach among the wording's samples ending in 1/3, 1/2 or 1/4 (count of "
+    out += ["### Neutral samples per problem statement (H = held-out phrasing)", "",
+            "majority: share of the most frequent approach among the phrasing's samples ending in 1/3, 1/2 or 1/4 (count of "
             "such samples). number, no method: samples ending in a canonical number whose text states no method, by number. "
-            "labeled followed: final-number follow rate on the wording's labeled prompts.", "",
-            md_table(["id", "", "final number", "majority", "number, no method", "stated method (check)", "labeled followed", "wording"], rows), ""]
+            "labeled followed: final-number follow rate on the phrasing's labeled prompts.", "",
+            md_table(["id", "", "final number", "majority", "number, no method", "stated method (check)", "labeled followed", "problem statement"], rows), ""]
 
     if N:
         rows = []
         for key, name in [("approach_number", "final number"), ("approach_text", "stated method (check)")]:
             aw, asmp = across_wordings(N, key), across_samples(N, key)
             if asmp:
-                rows.append([name, "pooled mix over samples labeled A/B/C (wordings with at least 2 such samples)",
+                rows.append([name, "pooled mix over samples labeled A/B/C (phrasings with at least 2 such samples)",
                              " ".join(f"{a}:{n}" for a, n in asmp["pooled"].items())])
             if aw:
-                rows.append([name, f"does the mix differ across wordings more than with shuffled labels? ({aw['n_wordings']} "
-                                   f"wordings, {aw['n']} samples)",
+                rows.append([name, f"does the mix differ across phrasings more than with shuffled labels? ({aw['n_wordings']} "
+                                   f"phrasings, {aw['n']} samples)",
                              f"spread {aw['chi2']:.1f} (df {aw['df']}); {100 * aw['p_perm']:.1f}% of {N_PERM} shufflings of the "
-                             f"labels across wordings spread as much or more"])
+                             f"labels across phrasings spread as much or more"])
             else:
-                rows.append([name, "mix across wordings", "not computed (fewer than 2 wordings or 1 approach)"])
+                rows.append([name, "mix across phrasings", "not computed (fewer than 2 phrasings or 1 approach)"])
             if asmp:
-                rows.append([name, f"agreement within a wording: mean share of the wording's most frequent approach "
-                                   f"({asmp['n_wordings']} wordings)",
+                rows.append([name, f"agreement within a phrasing: mean share of the phrasing's most frequent approach "
+                                   f"({asmp['n_wordings']} phrasings)",
                              f"{asmp['mean_majority']:.2f}; {asmp['expected_iid']:.2f} if every sample were an independent "
                              f"draw from the pooled mix"])
-                rows.append([name, "wordings whose samples all land on the same approach", f"{asmp['single']}/{asmp['n_wordings']}"])
+                rows.append([name, "phrasings whose samples all land on the same approach", f"{asmp['single']}/{asmp['n_wordings']}"])
         out += ["### Variation of the neutral approach", "", md_table(["label", "", ""], rows), ""]
 
     allr = L + N
     if allr:
         how = Counter(r["final_how"] for r in allr)
-        limits = {k: meta[k]["max_new_tokens"] for k in ["labeled", "neutral"] if meta.get(k)}
-        trunc = sum(r["n_tokens"] >= limits.get("labeled" if "approach" in r else "neutral", 10 ** 9) for r in allr)
+        # rows written before 2026-10-09 carry no max_new_tokens; they came from the file's first run
+        limits = {k: meta[k][0]["max_new_tokens"] for k in ["labeled", "neutral"] if meta.get(k)}
+        trunc = sum(r["n_tokens"] >= (r.get("max_new_tokens") or limits.get("labeled" if "approach" in r else "neutral", 10 ** 9))
+                    for r in allr)
         rows = [["final answer found by", " ".join(f"{k}:{v}" for k, v in how.most_common())],
                 ["mentions the paradox / 'depends'", pct(sum(r["mentions_paradox"] for r in allr), len(allr))],
                 ["answers that hit the token limit", pct(trunc, len(allr))],
@@ -271,7 +274,7 @@ def samples_file(tag, data):
 
 def _read_entry(r, extra=""):
     v = "–" if r["final_value"] is None else r["final_value"]
-    return [f"## {r['id']} — wording {r['wording_id']}, sample {r['sample']}{extra}", "",
+    return [f"## {r['id']} — phrasing {r['wording_id']}, sample {r['sample']}{extra}", "",
             f"- number: **{r['approach_number']}** (value {v}, {r['final_how']})",
             f"- stated method: **{r['approach_text']}** (hits {r['method_hits']})",
             f"- {r['n_tokens']} tokens", "", "> " + r["prompt"].replace("\n", "\n> "), "", "```", r["answer"], "```", ""]
@@ -279,11 +282,11 @@ def _read_entry(r, extra=""):
 
 def read_files(tag, data):
     """Hand-reading files: every neutral answer, and N_READ_LABELED labeled answers spread evenly over approaches
-    and their descriptions (wordings drawn at random within a description)."""
+    and their descriptions (phrasings drawn at random within a description)."""
     N = sorted(data["neutral"], key=lambda r: (r["wording_id"], r["sample"]))
     if N:
         out = [f"# {tag}: all {len(N)} neutral answers", "",
-               "Sorted by wording, then sample. number = label from the final number (primary); stated method = label "
+               "Sorted by phrasing, then sample. number = label from the final number (primary); stated method = label "
                "from the method markers (check).", ""]
         for r in N:
             out += _read_entry(r)

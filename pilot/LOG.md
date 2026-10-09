@@ -34,16 +34,16 @@ Light running log, newest entry last. Numbers go here after each stage; decision
 
 ## 2026-10-09 — stage 1 run on Windows (1.5B, 3B); 7B not run
 
-- Runs: RTX 2000 Ada, bf16, default batch sizes (8 for the 1.5B, 4 for the 3B, 6.4 GB in use), no out-of-memory errors. Per model, 432 labeled greedy answers and 18 wordings × 10 neutral samples at T = 0.7. Wall time: 1.5B about 21 + 10 min, 3B about 52 + 26 min. The machine's stored HF token is rejected, so the runs used `HF_HUB_DISABLE_IMPLICIT_TOKEN=1` (the Qwen models are public).
-- Scoring change (researcher's): the final number (1/3 A, 1/2 B, 1/4 C) is now the primary label and the stated method is a check next to it. The keyword markers were not retuned. The per-wording table has a new column for samples that end in a canonical number but state no method, split by number. `s1_summarize.py` also writes `read_neutral_qwen3b.md` (all 180 3B neutral answers) and `read_labeled_qwen3b.md` (60 labeled 3B answers, 20 per approach, 2–3 per description) for reading by hand.
-- How the two variation readings work. Across wordings: count A/B/C per wording, measure how unevenly the mix is spread over the wordings, and compare that spread with what you get after shuffling the labels among wordings (5000 shuffles). A large share of shuffles that spread at least as much means the wordings differ no more than chance. Within a wording: the average share of samples that land on the wording's most common approach, next to the share that independent draws from the pooled mix would give.
+- Runs: RTX 2000 Ada, bf16, default batch sizes (8 for the 1.5B, 4 for the 3B, 6.4 GB in use), no out-of-memory errors. Per model, 432 labeled greedy answers and 18 phrasings × 10 neutral samples at T = 0.7. Wall time: 1.5B about 21 + 10 min, 3B about 52 + 26 min. The machine's stored HF token is rejected, so the runs used `HF_HUB_DISABLE_IMPLICIT_TOKEN=1` (the Qwen models are public).
+- Scoring change (researcher's): the final number (1/3 A, 1/2 B, 1/4 C) is now the primary label and the stated method is a check next to it. The keyword markers were not retuned. The per-problem-statement table has a new column for samples that end in a canonical number but state no method, split by number. `s1_summarize.py` also writes `read_neutral_qwen3b.md` (all 180 3B neutral answers) and `read_labeled_qwen3b.md` (60 labeled 3B answers, 20 per approach, 2–3 per description) for reading by hand.
+- How the two variation readings work. Across phrasings: count A/B/C per phrasing, measure how unevenly the mix is spread over the phrasings, and compare that spread with what you get after shuffling the labels among phrasings (5000 shuffles). A large share of shuffles that spread at least as much means the phrasings differ no more than chance. Within a phrasing: the average share of samples that land on the phrasing's most common approach, next to the share that independent draws from the pooled mix would give.
 
 Final number (primary), with the stated method as a check:
 
 | | 1.5B | 3B |
 |---|---|---|
 | labeled, number = labeled approach (all 432) | 25% | 46% |
-| ... non-canonical wordings / held-out wording and description | 26% / 20% | 46% / 42% |
+| ... non-canonical phrasings / held-out phrasing and description | 26% / 20% | 46% / 42% |
 | ... per approach A / B / C | 16% / 46% / 14% | 26% / 57% / 56% |
 | labeled, stated method = labeled approach (check) | 33% | 43% |
 | labeled, number ends in something other than 1/3, 1/2 or 1/4 | 54% | 25% |
@@ -51,8 +51,13 @@ Final number (primary), with the stated method as a check:
 | neutral, number A / B / C / other (of 180) | 28 / 39 / 6 / 100 | 40 / 49 / 28 / 62 |
 | neutral samples with a canonical number but no stated method | 57 of 73 | 61 of 117 |
 | neutral, stated method A / B / C / none (check) | 11 / 13 / 7 / 146 | 20 / 13 / 42 / 100 |
-| across wordings: shuffles spreading as much or more (number; stated) | 41%; 52% | 82%; 28% |
-| within a wording: mean majority share vs independent draws (number) | 0.68 vs 0.66 | 0.53 vs 0.55 |
+| across phrasings: shuffles spreading as much or more (number; stated) | 41%; 52% | 82%; 28% |
+| within a phrasing: mean majority share vs independent draws (number) | 0.68 vs 0.66 | 0.53 vs 0.55 |
 | answers that hit the 768-token limit (all) | 9% | 7% |
 
-The 3B follows a stated approach about twice as often as the 1.5B, mostly for B and C (A is followed in about a quarter of answers and often ends in 1/2 or 1/4). The 1.5B ends in a non-canonical number in about half its answers. In neither model does the neutral choice look like a property of the wording: the mix across wordings is no more uneven than shuffled labels, and samples of one wording agree no more often than independent draws from the pooled mix would. Most neutral answers that end in 1/3, 1/2 or 1/4 do not state a method. Full tables are in `results/s1/summary.md`. Waiting for the researcher.
+The 3B follows a stated approach about twice as often as the 1.5B, mostly for B and C (A is followed in about a quarter of answers and often ends in 1/2 or 1/4). The 1.5B ends in a non-canonical number in about half its answers. In neither model does the neutral choice look like a property of the problem statement: the mix across phrasings is no more uneven than shuffled labels, and samples of one phrasing agree no more often than independent draws from the pooled mix would. Most neutral answers that end in 1/3, 1/2 or 1/4 do not state a method. Full tables are in `results/s1/summary.md`. Waiting for the researcher.
+
+## 2026-10-09 — 3B neutral resampled to 30 per problem statement
+
+- `s1_generate.py --model 3b --set neutral --n_samples 30 --max_new_tokens 1024` (T = 0.7) resumed from the existing file. It kept samples 0–9 (768 tokens) and added samples 10–29 (1024 tokens) to `neutral_qwen3b.jsonl`, which now holds 540 samples. Each run now writes its own meta row, and new answer rows store their `max_new_tokens`. Hitting the token limit dropped from 17/180 at 768 tokens to 4/360 at 1024.
+- 3B neutral, 540 samples: final number A 121, B 159, C 81, other 177, multiple 2. 191 of the 361 that end in 1/3, 1/2 or 1/4 state no method. Stated-method check: A 49, B 34, C 123, multiple 23, none 311. Across phrasings, 10% of label shuffles spread as much or more on the number (1.2% on the stated method). Within a phrasing the mean majority share is 0.49, against 0.48 for independent draws. So with 30 samples per problem statement, the number-based choice still looks like a per-sample draw. Only the stated method, which is read from fewer samples, hints at some dependence on the phrasing.
