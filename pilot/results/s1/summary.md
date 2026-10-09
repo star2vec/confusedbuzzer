@@ -329,3 +329,143 @@ majority: share of the most frequent approach among the phrasing's samples endin
 | mentions the paradox / 'depends' | 3% (25/972) |
 | answers that hit the token limit | 5% (48/972) |
 | mean answer length (tokens) | 587 |
+
+## qwen7b
+
+Runs: labeled: 2026-10-09 17:12:41, cuda 4bit-nf4/bf16, T=0.0, n_samples=1, max_new_tokens=768, repetition_penalty=1.0 (432 labeled answers in all)
+
+### Approach rates (final number primary, stated method as a check)
+
+Labeled columns: share of answers to prompts labeled with that approach whose label is that approach. Neutral columns: share of all neutral samples with that label. other/multiple/none rows are shares of all labeled answers / all neutral samples.
+
+| approach | labeled, number | neutral, number | labeled, stated (check) | neutral, stated (check) |
+|---|---|---|---|---|
+| A endpoints 1/3 | 63% (91/144) | – | 50% (72/144) | – |
+| B radial 1/2 | 94% (136/144) | – | 65% (94/144) | – |
+| C midpoint 1/4 | 56% (80/144) | – | 57% (82/144) | – |
+| other | 15% (66/432) | – |  |  |
+| multiple | 0% (0/432) | – | 10% (44/432) | – |
+| none | 0% (0/432) | – | 27% (118/432) | – |
+
+### Labeled accuracy (answer label = labeled approach)
+
+| subset | n | number | stated (check) |
+|---|---|---|---|
+| all phrasings | 432 | 71% (307/432) | 57% (248/432) |
+| non-canonical phrasings (id != 0) | 408 | 73% (297/408) | 59% (239/408) |
+| canonical problem statement (id 0) | 24 | 42% (10/24) | 38% (9/24) |
+| held-out phrasings | 120 | 68% (82/120) | 60% (72/120) |
+| held-out descriptions | 162 | 67% (108/162) | 52% (84/162) |
+| held-out phrasing and description | 45 | 64% (29/45) | 58% (26/45) |
+
+### Labeled approach × final number
+
+| labeled | n | A | B | C | other | multiple | none |
+|---|---|---|---|---|---|---|---|
+| A endpoints 1/3 | 144 | 91 | 7 | 0 | 46 | 0 | 0 |
+| B radial 1/2 | 144 | 2 | 136 | 3 | 3 | 0 | 0 |
+| C midpoint 1/4 | 144 | 7 | 40 | 80 | 17 | 0 | 0 |
+
+### Labeled approach × stated method (check)
+
+| labeled | n | A | B | C | multiple | none |
+|---|---|---|---|---|---|---|
+| A endpoints 1/3 | 144 | 72 | 2 | 0 | 1 | 69 |
+| B radial 1/2 | 144 | 0 | 94 | 1 | 28 | 21 |
+| C midpoint 1/4 | 144 | 1 | 18 | 82 | 15 | 28 |
+
+### Number / stated method agreement
+
+both in A/B/C: answers where the final number and the stated method each map to one approach; agree: share of those where they match.
+
+| set | n | both in A/B/C | agree |
+|---|---|---|---|
+| labeled | 432 | 54% (233/432) | 96% (224/233) |
+| neutral | 0 | – | – |
+| both | 432 | 54% (233/432) | 96% (224/233) |
+
+#### labeled: number label (rows) × stated method (columns)
+
+| number \ stated | A | B | C | multiple | none |
+|---|---|---|---|---|---|
+| A | 48 | 1 | 1 | 2 | 48 |
+| B | 0 | 110 | 5 | 36 | 32 |
+| C | 0 | 2 | 66 | 3 | 12 |
+| other | 25 | 1 | 11 | 3 | 26 |
+| multiple | 0 | 0 | 0 | 0 | 0 |
+| none | 0 | 0 | 0 | 0 | 0 |
+
+### Follow rate per description
+
+| desc | approach |  | followed (number) | final numbers | followed (stated, check) | stated methods |
+|---|---|---|---|---|---|---|
+| a0 | A |  | 61% (11/18) | A:11 other:7 | 56% (10/18) | A:10 none:8 |
+| a1 | A |  | 61% (11/18) | A:11 B:2 other:5 | 56% (10/18) | A:10 none:8 |
+| a2 | A |  | 83% (15/18) | A:15 other:3 | 28% (5/18) | A:5 none:13 |
+| a3 | A |  | 78% (14/18) | A:14 B:1 other:3 | 61% (11/18) | A:11 multiple:1 none:6 |
+| a4 | A |  | 50% (9/18) | A:9 B:3 other:6 | 56% (10/18) | A:10 B:2 none:6 |
+| a5 | A | held out | 61% (11/18) | A:11 other:7 | 61% (11/18) | A:11 none:7 |
+| a6 | A | held out | 61% (11/18) | A:11 other:7 | 61% (11/18) | A:11 none:7 |
+| a7 | A | held out | 50% (9/18) | A:9 B:1 other:8 | 22% (4/18) | A:4 none:14 |
+| b0 | B |  | 83% (15/18) | A:1 B:15 C:2 | 56% (10/18) | B:10 C:1 multiple:6 none:1 |
+| b1 | B |  | 94% (17/18) | B:17 C:1 | 67% (12/18) | B:12 multiple:3 none:3 |
+| b2 | B |  | 94% (17/18) | A:1 B:17 | 89% (16/18) | B:16 multiple:2 |
+| b3 | B |  | 94% (17/18) | B:17 other:1 | 56% (10/18) | B:10 multiple:4 none:4 |
+| b4 | B |  | 100% (18/18) | B:18 | 61% (11/18) | B:11 multiple:3 none:4 |
+| b5 | B | held out | 100% (18/18) | B:18 | 56% (10/18) | B:10 multiple:3 none:5 |
+| b6 | B | held out | 94% (17/18) | B:17 other:1 | 78% (14/18) | B:14 multiple:3 none:1 |
+| b7 | B | held out | 94% (17/18) | B:17 other:1 | 61% (11/18) | B:11 multiple:4 none:3 |
+| c0 | C |  | 56% (10/18) | A:1 B:4 C:10 other:3 | 78% (14/18) | C:14 multiple:3 none:1 |
+| c1 | C |  | 89% (16/18) | C:16 other:2 | 94% (17/18) | C:17 none:1 |
+| c2 | C |  | 83% (15/18) | A:1 B:1 C:15 other:1 | 83% (15/18) | C:15 none:3 |
+| c3 | C |  | 11% (2/18) | A:1 B:14 C:2 other:1 | 6% (1/18) | A:1 B:10 C:1 multiple:6 |
+| c4 | C |  | 67% (12/18) | B:6 C:12 | 67% (12/18) | B:2 C:12 multiple:2 none:2 |
+| c5 | C | held out | 56% (10/18) | A:1 B:5 C:10 other:2 | 61% (11/18) | B:1 C:11 multiple:1 none:5 |
+| c6 | C | held out | 28% (5/18) | A:2 B:7 C:5 other:4 | 28% (5/18) | B:2 C:5 multiple:1 none:10 |
+| c7 | C | held out | 56% (10/18) | A:1 B:3 C:10 other:4 | 39% (7/18) | B:3 C:7 multiple:2 none:6 |
+
+### Follow rate per clause frame / position / phrasing split
+
+|  | number | stated (check) |
+|---|---|---|
+| frame=0 | 72% (104/144) | 59% (85/144) |
+| frame=1 | 72% (104/144) | 56% (80/144) |
+| frame=2 | 69% (99/144) | 58% (83/144) |
+| position=after | 71% (153/216) | 61% (132/216) |
+| position=before | 71% (154/216) | 54% (116/216) |
+| heldout_wording=False | 72% (225/312) | 56% (176/312) |
+| heldout_wording=True | 68% (82/120) | 60% (72/120) |
+
+### Neutral samples per problem statement (H = held-out phrasing)
+
+majority: share of the most frequent approach among the phrasing's samples ending in 1/3, 1/2 or 1/4 (count of such samples). number, no method: samples ending in a canonical number whose text states no method, by number. labeled followed: final-number follow rate on the phrasing's labeled prompts.
+
+| id |  | final number | majority | number, no method | stated method (check) | labeled followed | problem statement |
+|---|---|---|---|---|---|---|---|
+| 0 |  | – | – | – | – | 42% (10/24) | Consider an equilateral triangle inscribed in a circle. Suppose a chord of the circle is c… |
+| 1 |  | – | – | – | – | 83% (20/24) | Given a circle of radius 1, what is the chance that a chord drawn at random is longer than… |
+| 2 | H | – | – | – | – | 75% (18/24) | Given a circle of radius 5, find the probability that a chord drawn at random is longer th… |
+| 3 |  | – | – | – | – | 67% (16/24) | Given a circle of radius 2, what is the chance that a chord drawn at random is longer than… |
+| 4 | H | – | – | – | – | 62% (15/24) | Given a circle of radius 2, find the probability that a chord drawn at random is longer th… |
+| 5 |  | – | – | – | – | 71% (17/24) | Given a circle of radius 2, compute the probability that a chord drawn at random is longer… |
+| 6 |  | – | – | – | – | 71% (17/24) | Consider a circle. A chord of the circle is drawn at random. What is the chance that it is… |
+| 7 |  | – | – | – | – | 83% (20/24) | Consider a circle of radius 1. A chord of the circle is drawn at random. What is the proba… |
+| 8 |  | – | – | – | – | 75% (18/24) | Consider a circle of radius 5. A chord of the circle is drawn at random. What is the proba… |
+| 9 |  | – | – | – | – | 71% (17/24) | Given a circle of radius 2, find the probability that a chord drawn at random is longer th… |
+| 10 | H | – | – | – | – | 83% (20/24) | Consider a circle of radius 1. A chord of the circle is drawn at random. What is the proba… |
+| 11 |  | – | – | – | – | 79% (19/24) | Given a circle of radius 1, find the probability that a chord drawn at random is longer th… |
+| 12 |  | – | – | – | – | 58% (14/24) | Given a circle of radius r, compute the probability that a chord drawn at random is longer… |
+| 13 |  | – | – | – | – | 75% (18/24) | Consider a circle of radius 1. A chord of the circle is drawn at random. Find the probabil… |
+| 14 | H | – | – | – | – | 67% (16/24) | Consider a circle of radius 5. A chord of the circle is drawn at random. Find the probabil… |
+| 15 | H | – | – | – | – | 54% (13/24) | Consider a circle of radius 5. A chord of the circle is drawn at random. What is the chanc… |
+| 16 |  | – | – | – | – | 88% (21/24) | Given a circle of radius 5, what is the chance that a chord drawn at random is longer than… |
+| 17 |  | – | – | – | – | 75% (18/24) | Consider a circle of radius 1. A chord of the circle is drawn at random. Compute the proba… |
+
+### Scorer diagnostics
+
+|  |  |
+|---|---|
+| final answer found by | boxed:413 cued:12 fallback:4 boxed_other:3 |
+| mentions the paradox / 'depends' | 2% (8/432) |
+| answers that hit the token limit | 2% (10/432) |
+| mean answer length (tokens) | 584 |
