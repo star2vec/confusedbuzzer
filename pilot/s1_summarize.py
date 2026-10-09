@@ -220,7 +220,7 @@ def section(tag, meta, data):
         for key, name in [("approach_number", "final number"), ("approach_text", "stated method (check)")]:
             aw, asmp = across_wordings(N, key), across_samples(N, key)
             if asmp:
-                rows.append([name, "pooled mix over samples labeled A/B/C",
+                rows.append([name, "pooled mix over samples labeled A/B/C (wordings with at least 2 such samples)",
                              " ".join(f"{a}:{n}" for a, n in asmp["pooled"].items())])
             if aw:
                 rows.append([name, f"does the mix differ across wordings more than with shuffled labels? ({aw['n_wordings']} "
