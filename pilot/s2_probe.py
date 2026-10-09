@@ -74,6 +74,7 @@ def main():
     rng = np.random.default_rng(args.seed)
 
     acts = np.load(S2 / f"acts_{tag}.npz")
+    layer_ids = [int(v) for v in acts["layers"]] if "layers" in acts.files else list(range(acts["last"].shape[1]))
     meta_rows = read_jsonl(S2 / f"acts_{tag}_meta.jsonl")
     run_meta, meta = meta_rows[0], meta_rows[1:]
     lab = [i for i, r in enumerate(meta) if r["set"] == "labeled"]
@@ -95,18 +96,19 @@ def main():
     for pos in ["last", "user_last", "user_mean"]:
         A = acts[pos][lab]  # (n_lab, n_layers+1, d)
         curve = []
-        for L in range(A.shape[1]):
+        for L, lid in enumerate(layer_ids):
             X = A[:, L, :]
             model, C, cv = cv_fit(lr_pipe, X[tr], y[tr], groups[tr], args.Cs)
             sc = split_scores(model, X, y, masks)
-            curve.append(dict(layer=L, C=C, cv=cv, **sc))
+            curve.append(dict(layer=lid, C=C, cv=cv, **sc))
             if pos == args.position:
-                print(f"  L{L:2d} C={C:<6g} cv={cv:.2f} train={sc['train']:.2f} strict={sc['strict']:.2f} "
+                print(f"  L{lid:2d} C={C:<6g} cv={cv:.2f} train={sc['train']:.2f} strict={sc['strict']:.2f} "
                       f"desc_only={sc['desc_only']:.2f} word_only={sc['word_only']:.2f}", file=sys.stderr)
         curves[pos] = curve
     curve = curves[args.position]
-    L = args.layer if args.layer is not None else int(np.argmax([c["cv"] for c in curve]))
-    X = acts[args.position][lab][:, L, :]
+    L = args.layer if args.layer is not None else layer_ids[int(np.argmax([c["cv"] for c in curve]))]
+    Li = layer_ids.index(L)  # array index of the chosen layer
+    X = acts[args.position][lab][:, Li, :]
     probe, C, cv = cv_fit(lr_pipe, X[tr], y[tr], groups[tr], args.Cs)
     chosen = dict(layer=L, C=C, cv=cv, **split_scores(probe, X, y, masks))
 
@@ -155,7 +157,7 @@ def main():
              u_dm=u_dm, sep_dm=np.array(sep_dm), resid_norm=resid_norm, scaler_mean=scaler.mean_, scaler_scale=scaler.scale_)
 
     # ---- apply to neutral prompts, next to stage-1 sampling frequencies if present
-    Xn = acts[args.position][neu][:, L, :]
+    Xn = acts[args.position][neu][:, Li, :]
     P = probe.predict_proba(Xn)
     s1 = [r for r in read_jsonl(RESULTS / "s1" / f"neutral_{tag}.jsonl") if r.get("kind") == "answer"]
     neutral_rows, agree, n_cmp = [], 0, 0
@@ -199,7 +201,7 @@ def main():
                       [f"text TF-IDF (C={tC:g})", f2(tcv), f2(text_scores["train"]), f2(text_scores["strict"]), f2(text_scores["desc_only"]), f2(text_scores["word_only"])],
                       ["nearest class mean, raw", "", f2(nc_scores["train"]), f2(nc_scores["strict"]), f2(nc_scores["desc_only"]), f2(nc_scores["word_only"])],
                       ["nearest class mean, standardized", "", f2(ncs_scores["train"]), f2(ncs_scores["strict"]), f2(ncs_scores["desc_only"]), f2(ncs_scores["word_only"])]]), ""]
-    out += ["## Layer curve (position `last`)", "", md_table(["layer", "C", "cv", "train", "strict", "desc_only", "word_only"],
+    out += [f"## Layer curve (position `{args.position}`)", "", md_table(["layer", "C", "cv", "train", "strict", "desc_only", "word_only"],
             [[c["layer"], f"{c['C']:g}", f2(c["cv"]), f2(c["train"]), f2(c["strict"]), f2(c["desc_only"]), f2(c["word_only"])] for c in curve]), ""]
     best_alt = {p: max(curves[p], key=lambda c: c["cv"]) for p in curves}
     out += ["Other positions, layer with best inner CV: " + "; ".join(

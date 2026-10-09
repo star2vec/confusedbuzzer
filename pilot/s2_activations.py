@@ -1,11 +1,11 @@
 """Stage 2 activation extraction (forward-only; Mac, fp32, batch 1).
 
 One forward pass per labeled and neutral prompt (chat template, no prefill), recording the residual stream at every
-layer (0 = embeddings, k = output of block k) at three positions:
+layer (0 = embeddings, k = output of block k; `--layers` keeps a subset, saved as `layers`) at three positions:
   last      : last token of the templated prompt (the newline after <|im_start|>assistant)  <- primary
   user_last : last token of the user message
   user_mean : mean over the user-message tokens
-Writes results/s2/acts_{tag}.npz (fp32 arrays [n_prompts, n_layers+1, d] per position, labeled rows first)
+Writes results/s2/acts_{tag}.npz (fp32 arrays [n_prompts, n_kept_layers, d] per position, labeled rows first)
 and results/s2/acts_{tag}_meta.jsonl (first row run metadata, then one row per prompt in the same order).
 """
 import argparse
@@ -25,6 +25,7 @@ def main():
     utf8_stdout()
     ap = argparse.ArgumentParser()
     add_common_args(ap)
+    ap.add_argument("--layers", type=int, nargs="+", default=None, help="residual indices to keep (default: all)")
     args = ap.parse_args()
     name = resolve_model(args.model)
     tag = model_tag(name)
@@ -41,6 +42,7 @@ def main():
                              noun=r["noun"], text=r["text"]))
 
     tok, model, device = load_model(args.model, "forward", args.device)
+    layers = args.layers if args.layers is not None else list(range(len(model.model.layers) + 1))
     acts = {p: [] for p in POSITIONS}
     t0 = time.time()
     with ResidualRecorder(model) as rec, torch.no_grad():
@@ -49,7 +51,7 @@ def main():
             uf, ul = user_token_span(tok, prompt, j["text"])
             ids = tok(prompt, return_tensors="pt", add_special_tokens=False).input_ids.to(device)
             model(ids)
-            hs = rec.stack()[:, 0].float()  # (n_layers+1, T, d)
+            hs = rec.stack()[layers, 0].float()  # (n_kept_layers, T, d)
             acts["last"].append(hs[:, -1].cpu().numpy())
             acts["user_last"].append(hs[:, ul].cpu().numpy())
             acts["user_mean"].append(hs[:, uf:ul + 1].mean(1).cpu().numpy())
@@ -60,8 +62,8 @@ def main():
 
     out = RESULTS / "s2" / f"acts_{tag}.npz"
     arrays = {p: np.stack(v).astype(np.float32) for p, v in acts.items()}
-    np.savez(out, **arrays)
-    meta = run_meta(name, device, "forward", n=len(jobs), positions=POSITIONS, shape=list(arrays["last"].shape),
+    np.savez(out, layers=np.array(layers), **arrays)
+    meta = run_meta(name, device, "forward", n=len(jobs), positions=POSITIONS, shape=list(arrays["last"].shape), layers=layers,
                     n_labeled=sum(j["set"] == "labeled" for j in jobs), n_neutral=sum(j["set"] == "neutral" for j in jobs))
     write_jsonl(RESULTS / "s2" / f"acts_{tag}_meta.jsonl", [dict(kind="meta", **meta)] + jobs)
     print(f"wrote {out} {arrays['last'].shape} and meta ({len(jobs)} prompts)", file=sys.stderr)

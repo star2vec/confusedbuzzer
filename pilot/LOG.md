@@ -114,3 +114,63 @@ Next stage tests: we test whether steering the stated reading and steering the f
 | numeric | 5, 8, 10, 16 | 91% (84/92) | 1/3 25 / 5; 1/2 46 / 3; 1/4 13 / 0 |
 
 The 7B works out its number far more often than the 3B (86% against 55%). The 1/3s are still the weakest: 22% of them are recalled, against 10% of 1/2s and 3% of 1/4s. Triangle phrasings get the lowest derived share. They lead to 1/3 more often (90 of 136, against 30 of 92 for numeric thresholds), and the triangle's 120° angle invites the threshold-over-360° shortcut. The canonical problem statement (phrasing 0) is the only one where recalled answers outnumber derived ones (8 to 7).
+
+## 2026-10-09 — stage 2 on the 7B: reading direction, answer direction, comparison
+
+Every second layer: residual indices 0, 2, …, 28; 0 is the embeddings. The 7B is the 4-bit model, as in stage 1. No steering. Tables are in `results/s2/summary_qwen7b.md` (reading) and `results/s2/summary_answer_qwen7b.md` (answer and comparison).
+
+**Reading direction**: labeled prompts, last prompt token, the existing `s2_probe.py`.
+- The probe trains on 195 prompts: training phrasings × training descriptions. It is tested on three held-out sets:
+  - phrasing and description both unseen (45);
+  - description unseen (117);
+  - phrasing unseen (75).
+- Inner cross-validation picks layer 20. There it is right on 96% of the 45 fully unseen prompts. It also gets 87% on unseen descriptions and 100% on unseen phrasings.
+- Shuffled labels give 33% (95th percentile 45%). A words-only classifier on the prompt text gets 76% / 80% / 100%.
+- Layers 2–18 already get 87–100% on unseen phrasings, but only 51–68% on unseen descriptions. From layer 20 on, both are high. So the early layers mostly key on the description's words, and the later layers carry something that transfers to descriptions written without the training keywords.
+- On the 18 neutral prompts, the layer-20 probe puts all its weight on A for every phrasing. That is not what the model then samples, which is A for 8 phrasings and B for 10. Neutral prompts state no approach, so this is outside what the probe was trained on.
+
+**Answer direction: where the formula starts.**
+- Input: the 342 derived neutral answers from `judge_qwen7b.jsonl`. The label is the final number: 1/3 for 142 answers, 1/2 for 143, 1/4 for 57.
+- What I searched for: the first chord-length formula in each answer. That is an expression tying the chord's length to the distance from the center (2√(r²−d²) and its variants, including the words "Pythagorean theorem" that introduce it) or to the central angle (2r sin(θ/2), a cosine).
+- What was found: 307 answers have one. The other 35 argue in words only ("the side subtends 120°").
+- How early it starts: answer token 53 at the earliest, 92 at the 5th percentile, 162 at the median.
+- Detector check: I read 30 random answers against the detector's mark. In all 30 it sat on the first formula, or correctly found none.
+- Window: by the rule (the formula comes after the window in at least 95% of answers), it would be about 92 tokens (the 5th percentile). It was capped at 60, so the floor of 15 did not apply. One answer has its formula inside the first 60 tokens and is dropped, leaving 341 answers.
+- Words before formulas: the variable is often named in words before any formula. The median first mention of "perpendicular distance", "central angle", "subtend" or "midpoint" is token 110. 29 of the 341 kept answers name it inside the window: 9 within the first 20 tokens, 14 within 30. So a probe on the first 60 tokens can partly be reading words that state the approach.
+
+**Answer direction: probe.**
+- Setup:
+  - Activations: the prompt plus the first 60 answer tokens were run through the model.
+  - Probe input: the mean over the window, per layer.
+  - Folds: six groups of phrasings. Every test phrasing is unseen in training.
+  - Score: balanced accuracy, where 33% is chance. The plain-accuracy majority rate is 42%.
+- Results:
+  - It peaks at 53% balanced (63% plain) at layers 10–16. Most layers are 48–50%.
+  - **Global null:** labels shuffled over all answers give 33% (95th percentile 36–40%).
+  - **Within-phrasing null:** labels shuffled only inside each phrasing give 43–45% (95th percentile 45–48%). This shuffle keeps how often each phrasing leads to each number and removes everything specific to one sample.
+  - **Words-only baselines:**
+    - TF-IDF on the window's own text gets 48% balanced.
+    - The mean token embedding (layer 0) gets 47%.
+    - TF-IDF on the prompt text gets 40%.
+- Reading of these numbers: most of what the window probe gets is already in the phrasing and in the window's words. At layers 10–16, the activations add about 5 points over the words and over the within-phrasing null's 95th percentile.
+
+**Answer direction: other positions.**
+- **Last prompt token on its own:** 50% balanced at layer 8, 34–47% at the other layers, and 27% at layer 0, against a global null 95th percentile of 37–46%. This activation is the same for every sample of a phrasing (18 distinct points), so all of it is phrasing-level information that carries over to unseen phrasings. Its within-phrasing null equals the real run by construction.
+- **Sensitivity (mean over the first 10 / 20 / 30 / 60 tokens, balanced):** best 53% / 51% / 48% / 53%. No kept answer has its formula inside any of these spans. The variable is named in words in 0 / 9 / 14 / 29 answers. The first-10 mean already reaches 50–53% at layers 10–20, but those tokens mostly restate the problem ("To determine the probability that a randomly drawn chord…"). Whether that is more than the phrasing is not tested here: the within-phrasing null was run only on the 60-token window.
+
+**Comparison of the two directions.**
+- **Alignment:** the class-by-class cosines between the reading probe's weights and the answer probe's weights are all between −0.03 and +0.06. The 95th percentile with shuffled answer labels is 0.03–0.06. Difference-of-means directions agree no better: within ±0.08 at layers 2–26, and +0.17 for A at layer 28 against a null of 0.22.
+- **Cross-prediction:**
+  - Raw, each probe puts nearly everything in one class on the other set (balanced 33%).
+  - With each set shifted onto the other's mean, the reading probe on the answer windows gets 22–47% balanced; the two highest are 47% at layer 26 and 44% at layer 28.
+  - The reading probe on the answers' last prompt token gets 21–39%.
+  - The answer probe on the labeled prompts gets 27–36% (strict set 22–42%).
+- **Overall:** at these layers and positions, the direction that reads a stated approach in the prompt and the direction that predicts the final number early in the model's own answer are not the same direction. Neither transfers to the other's data.
+
+**Phrasing caveat.** The 7B's neutral choice depends on the phrasing (stage 1). So the answer probe may partly read the phrasing rather than a choice the model makes in each sample.
+- **What the folds control for:** each test phrasing is unseen in training, so the probe cannot score by recognising a phrasing it was trained on.
+- **What they do not control for:** features shared across phrasings still predict the number on unseen ones: threshold type (triangle / r√3 / numeric), radius, verb, sentence order. Triangle phrasings, for example, lead to 1/3 more often.
+- **How much that could explain:**
+  - Phrasing-level information alone gets 41–50% balanced (last-prompt-token probe) and 40% (prompt-text TF-IDF).
+  - Keeping the phrasing → number link but shuffling within phrasings gives 43–45%, with a 95th percentile up to 48%.
+  - The window probe's 53% is only a little above these.

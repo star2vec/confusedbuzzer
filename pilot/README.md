@@ -36,13 +36,23 @@ Then `git add results/s1 && git commit && git push`. Summary on any machine: `uv
 
 `s1_nextword.py` (prefilled next-word check) is kept as a script but its numbers are not reported.
 
-## Stage 2: probe (Mac, model chosen by the researcher)
+## Stage 2: probe (reading direction on labeled prompts; answer direction on derived neutral answers)
 
     uv run python s2_activations.py --model 1.5b
     uv run python s2_probe.py --model 1.5b
 
 Writes `results/s2/summary_{tag}.md`, `probe_{tag}.json` and `direction_{tag}.npz` (the activations `.npz` is
-gitignored; the direction file is small and committed for stage 3).
+gitignored; the direction file is small and committed for stage 3). `--layers 0 2 4 …` keeps a subset of layers.
+
+Answer direction (Windows, after the stage-1 hand judgment `results/s1/judge_{tag}.jsonl` exists):
+
+    uv run python s2_activations.py --model 7b --layers 0 2 4 6 8 10 12 14 16 18 20 22 24 26 28
+    uv run python s2_probe.py --model 7b
+    uv run python s2_answer_acts.py --model 7b --measure --show 30   # formula positions + window, no GPU
+    uv run python s2_answer_acts.py --model 7b --layers 0 2 4 6 8 10 12 14 16 18 20 22 24 26 28
+    uv run python s2_answer_probe.py --model 7b
+
+Writes `results/s2/formula_pos_{tag}.json`, `answer_probe_{tag}.json` and `summary_answer_{tag}.md`.
 
 ## Stage 3: steering sweep (Windows)
 
