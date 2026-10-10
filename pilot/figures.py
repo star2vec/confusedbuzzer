@@ -136,14 +136,14 @@ def fig_header():
     lines.append(f"(a) endpoints at {np.rad2deg(p) % 360:.0f}° and {np.rad2deg(q) % 360:.0f}°; shaded arc 210°–330° (one third), 1/3 color")
     # (b) full radius, inner half shaded along the line, point in that half, chord at right angles
     ax = axes[1]
-    th, dd = np.deg2rad(270), 0.2  # illustration: radius pointing away from all three vertices, point inside the inner half
+    th, dd = np.deg2rad(262), 0.15  # illustration: radius tilted 8° off 270° (not perpendicular to an edge), point in the inner half; chord ends >= 13° from the vertices
     u = np.array([np.cos(th), np.sin(th)]); v = np.array([-u[1], u[0]])
     ends = [th + np.arccos(dd), th - np.arccos(dd)]
     away = min(abs((np.rad2deg(th - t) + 180) % 360 - 180) for t in tri)
     gap = min(abs((np.rad2deg(e - t) + 180) % 360 - 180) for e in ends for t in tri)
-    assert away >= 59.9 and dd < 0.5, away
+    assert away >= 40 and dd < 0.5, away
     ax.plot([0, u[0]], [0, u[1]], color=GEO_INK, lw=GEO_LW, zorder=2)
-    ax.plot([0, 0.5 * u[0]], [0, 0.5 * u[1]], color=COL["1/2"], lw=3.6, solid_capstyle="butt", zorder=3)  # inner half: center to midpoint
+    ax.plot([0, 0.5 * u[0]], [0, 0.5 * u[1]], color=COL["1/2"], lw=3.6, alpha=0.55, solid_capstyle="butt", zorder=3)  # inner half: center to midpoint
     h = np.sqrt(1 - dd ** 2)
     c1, c2 = dd * u + h * v, dd * u - h * v
     ax.plot([c1[0], c2[0]], [c1[1], c2[1]], color=GEO_INK, lw=GEO_LW)

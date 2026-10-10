@@ -341,3 +341,4 @@ n per offset: 328, 333, 342, 342, 342, 342, 342
   - In (b), the radius points away from all three vertices: 270°, 60° from each. The point is at 0.20 r. The inner half of the radius, from the center to its midpoint at 0.5 r, is drawn as a thicker line in the 1/2 color. With the radius between two vertices and the point in the inner half, the chord ends cannot stay 30° from every vertex; here they are 18° from the nearest one.
 - **where we look:** the grey label and the caption now say "the first 60 answer tokens, used by the earlier probe".
 - **when:** the caption now ends with "a probe above this line reads more than the phrasing."
+- **header (b), adjusted:** the radius is now at 262°, tilted 8° off straight down so it is not perpendicular to the triangle's base. The point is at 0.15 r, and the chord ends are 13° from the nearest vertex. The inner-half line is drawn at 55% opacity.
