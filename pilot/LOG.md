@@ -342,3 +342,4 @@ n per offset: 328, 333, 342, 342, 342, 342, 342
 - **where we look:** the grey label and the caption now say "the first 60 answer tokens, used by the earlier probe".
 - **when:** the caption now ends with "a probe above this line reads more than the phrasing."
 - **header (b), adjusted:** the radius is now at 262°, tilted 8° off straight down so it is not perpendicular to the triangle's base. The point is at 0.15 r, and the chord ends are 13° from the nearest vertex. The inner-half line is drawn at 55% opacity.
+- **header (b):** the inner-half band now matches the arc band in (a): 0.1 r wide (about 7.7 pt), 35% opacity, drawn under the radius line.

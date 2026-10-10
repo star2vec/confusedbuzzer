@@ -143,7 +143,8 @@ def fig_header():
     gap = min(abs((np.rad2deg(e - t) + 180) % 360 - 180) for e in ends for t in tri)
     assert away >= 40 and dd < 0.5, away
     ax.plot([0, u[0]], [0, u[1]], color=GEO_INK, lw=GEO_LW, zorder=2)
-    ax.plot([0, 0.5 * u[0]], [0, 0.5 * u[1]], color=COL["1/2"], lw=3.6, alpha=0.55, solid_capstyle="butt", zorder=3)  # inner half: center to midpoint
+    band_pt = 0.1 * ax.get_position().width * fig.get_size_inches()[0] * 72 / 2.24  # 0.1 r in points: same width as the arc band in (a)
+    ax.plot([0, 0.5 * u[0]], [0, 0.5 * u[1]], color=COL["1/2"], lw=band_pt, alpha=0.35, solid_capstyle="butt", zorder=1)  # inner half: center to midpoint
     h = np.sqrt(1 - dd ** 2)
     c1, c2 = dd * u + h * v, dd * u - h * v
     ax.plot([c1[0], c2[0]], [c1[1], c2[1]], color=GEO_INK, lw=GEO_LW)
