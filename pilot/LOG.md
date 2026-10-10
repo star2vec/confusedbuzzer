@@ -323,3 +323,13 @@ within-phrasing shuffle, 95th percentile, 50 shuffles (%): 40.6, 40.5, 46.4, 46.
 chance: 33.3%
 n per offset: 328, 333, 342, 342, 342, 342, 342
 
+
+## 2026-10-10 — figures: header, which, famous number touched up
+
+- **header:**
+  - (b) The radius is at 100°, with the point at 0.30 r. The chord ends at 173° and 27°, at least 37° from every vertex. The shaded part is exactly the segment from 0 to 0.5 r of the radius.
+  - (c) The midpoint is at 0.30 r.
+  - The numbers are half the previous size, just under each circle.
+  - The robot has both eyebrows (one raised, one flat) and a margin below its head.
+- **which:** wider gaps between the threshold groups, and smaller radius sublabels.
+- **famous number:** the math is set at the prose size, with full-size fractions. Lines are spaced by their rendered height. The data drawn is unchanged.

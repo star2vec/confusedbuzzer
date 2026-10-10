@@ -101,13 +101,14 @@ def dot(ax, xy, size=6.5, color=GEO_INK):
 
 
 def robot(ax, x0, y0, s):
-    """Small puzzled line robot: rounded square head, dot eyes, antenna with a ball, one raised eyebrow, short flat mouth."""
+    """Small puzzled line robot: rounded square head, dot eyes, antenna with a ball, one raised and one flat eyebrow, short flat mouth."""
     kw = dict(color=GEO_INK, lw=GEO_LW, solid_capstyle="round")
     ax.add_patch(FancyBboxPatch((x0 - 0.5 * s, y0 - 0.5 * s), s, s, boxstyle=f"round,pad=0,rounding_size={0.22 * s}",
                                 fill=False, lw=GEO_LW, ec=GEO_INK))
     for ex in (-0.2, 0.2):
         ax.add_patch(Circle((x0 + ex * s, y0 + 0.05 * s), 0.055 * s, color=GEO_INK, lw=0))
-    ax.plot([x0 + 0.08 * s, x0 + 0.32 * s], [y0 + 0.22 * s, y0 + 0.30 * s], **kw)  # one raised eyebrow
+    ax.plot([x0 - 0.32 * s, x0 - 0.08 * s], [y0 + 0.2 * s, y0 + 0.2 * s], **kw)  # flat eyebrow
+    ax.plot([x0 + 0.08 * s, x0 + 0.32 * s], [y0 + 0.24 * s, y0 + 0.33 * s], **kw)  # raised eyebrow
     ax.plot([x0 - 0.12 * s, x0 + 0.12 * s], [y0 - 0.24 * s, y0 - 0.24 * s], **kw)  # short flat mouth
     ax.plot([x0, x0], [y0 + 0.5 * s, y0 + 0.75 * s], **kw)  # antenna
     ax.add_patch(Circle((x0, y0 + 0.81 * s), 0.06 * s, fill=False, lw=GEO_LW, ec=GEO_INK))
@@ -135,21 +136,23 @@ def fig_header():
     lines.append(f"(a) endpoints at {np.rad2deg(p) % 360:.0f}° and {np.rad2deg(q) % 360:.0f}°; shaded arc 210°–330° (one third), 1/3 color")
     # (b) full radius, inner half shaded along the line, point in that half, chord at right angles
     ax = axes[1]
-    th = np.deg2rad(20)  # illustration: a fixed "random" radius that stays clear of the triangle
+    th, dd = np.deg2rad(100), 0.3  # illustration: radius angle and point fixed so the chord's ends stay clear of the vertices
     u = np.array([np.cos(th), np.sin(th)]); v = np.array([-u[1], u[0]])
-    band = 0.07
-    ax.add_patch(Polygon([band * v, 0.5 * u + band * v, 0.5 * u - band * v, -band * v], closed=True, color=COL["1/2"], alpha=0.5, lw=0))
-    ax.plot([0, u[0]], [0, u[1]], color=GEO_INK, lw=GEO_LW)
-    dd = rng.uniform(0.2, 0.45)
+    ends = [th + np.arccos(dd), th - np.arccos(dd)]
+    gap = min(abs((np.rad2deg(e - t) + 180) % 360 - 180) for e in ends for t in tri)
+    assert gap >= 30 and dd < 0.5, gap
+    ax.plot([0, 0.5 * u[0]], [0, 0.5 * u[1]], color=COL["1/2"], lw=8, alpha=0.55, solid_capstyle="butt", zorder=1)  # inner half
+    ax.plot([0, u[0]], [0, u[1]], color=GEO_INK, lw=GEO_LW, zorder=2)
     h = np.sqrt(1 - dd ** 2)
     c1, c2 = dd * u + h * v, dd * u - h * v
     ax.plot([c1[0], c2[0]], [c1[1], c2[1]], color=GEO_INK, lw=GEO_LW)
     dot(ax, dd * u)
-    lines.append(f"(b) radius at {np.rad2deg(th):.0f}°, point at {dd:.2f} r; inner half of the radius shaded, 1/2 color")
+    lines.append(f"(b) radius at {np.rad2deg(th):.0f}°, point at {dd:.2f} r; chord ends at {np.rad2deg(ends[0]) % 360:.0f}° and "
+                 f"{np.rad2deg(ends[1]) % 360:.0f}° (at least {gap:.0f}° from every vertex); segment 0–0.5 r of the radius shaded, 1/2 color")
     # (c) inner circle r/2 filled, random midpoint inside, its chord
     ax = axes[2]
     ax.add_patch(Circle((0, 0), 0.5, color=COL["1/4"], alpha=0.25, lw=0))
-    rr, ph = 0.5 * np.sqrt(rng.uniform(0.1, 0.8)), rng.uniform(0, 2 * np.pi)
+    rr, ph = 0.3, rng.uniform(0, 2 * np.pi)
     m = rr * np.array([np.cos(ph), np.sin(ph)])
     u = m / np.linalg.norm(m); v = np.array([-u[1], u[0]]); h = np.sqrt(1 - rr ** 2)
     ax.plot([(m + h * v)[0], (m - h * v)[0]], [(m + h * v)[1], (m - h * v)[1]], color=GEO_INK, lw=GEO_LW)
@@ -158,9 +161,9 @@ def fig_header():
     for ax, lab, num in zip(axes, "abc", NUMS):
         dot(ax, (0, 0), size=4.5)  # center
         ax.text(-1.1, 1.08, f"({lab})", fontsize=15, va="top", color=GEO_INK)
-        ax.text(0.5, -0.07, num, transform=ax.transAxes, ha="center", va="top", fontsize=26, color=COL[num], fontweight="bold")
-    rax = fig.add_axes([0.44, 0.0, 0.12, 0.22]); rax.set_aspect("equal"); rax.axis("off")
-    rax.set_xlim(-0.9, 1.4); rax.set_ylim(-0.65, 1.0)
+        ax.text(0.5, 0.03, num, transform=ax.transAxes, ha="center", va="top", fontsize=13, color=COL[num], fontweight="bold")
+    rax = fig.add_axes([0.44, 0.02, 0.12, 0.27]); rax.set_aspect("equal"); rax.axis("off")
+    rax.set_xlim(-0.9, 1.4); rax.set_ylim(-0.9, 1.0)
     robot(rax, 0.0, 0.0, 0.9)
     save(fig, "header")
     note("header", lines + ["numbers under the panels: (a) 1/3, (b) 1/2, (c) 1/4"])
@@ -221,7 +224,8 @@ def fig_which():
     fig, axes = plt.subplots(2, 1, figsize=(WIDTH_IN, 7.6), sharex=True)
     fig.subplots_adjust(left=0.09, right=0.985, top=0.9, bottom=0.2, hspace=0.18)
     lines = [f"x order (threshold, radius, id): " + ", ".join(f"{w}({THR_LABEL[P[w]['threshold']]},{RAD_LABEL[P[w]['radius']]})" for w in order)]
-    x = np.arange(len(order))
+    GAP = 0.7  # extra space between threshold groups
+    x = np.array([i + GAP * THR_ORDER.index(P[w]["threshold"]) for i, w in enumerate(order)])
     for ax, tag, name in zip(axes, ["qwen3b", "qwen7b"], ["3B", "7B"]):
         C = numbers_per_phrasing(tag)
         bottom = np.zeros(len(order))
@@ -240,15 +244,15 @@ def fig_which():
     for thr in THR_ORDER:
         idx = [i for i, w in enumerate(order) if P[w]["threshold"] == thr]
         for rad in RAD_ORDER:
-            sub = [i for i in idx if P[order[i]]["radius"] == rad]
+            sub = [x[i] for i in idx if P[order[i]]["radius"] == rad]
             if sub:
-                ax.text(np.mean(sub), -0.25, RAD_LABEL[rad], transform=trans, ha="center", va="top", fontsize=12, color="#555555")
-        ax.text(np.mean(idx), -0.42, THR_LABEL[thr], transform=trans, ha="center", va="top", fontsize=16)
-        ax.annotate("", xy=(idx[0] - 0.4, -0.38), xytext=(idx[-1] + 0.4, -0.38), xycoords=trans, textcoords=trans,
+                ax.text(np.mean(sub), -0.25, RAD_LABEL[rad], transform=trans, ha="center", va="top", fontsize=10.5, color="#555555")
+        ax.text(np.mean(x[idx]), -0.42, THR_LABEL[thr], transform=trans, ha="center", va="top", fontsize=16)
+        ax.annotate("", xy=(x[idx[0]] - 0.4, -0.38), xytext=(x[idx[-1]] + 0.4, -0.38), xycoords=trans, textcoords=trans,
                     arrowprops=dict(arrowstyle="-", color="#777777", lw=1.4))
         if thr != THR_ORDER[-1]:
             for a in axes:
-                a.axvline(idx[-1] + 0.5, color="#cccccc", lw=1.2, zorder=0)
+                a.axvline(x[idx[-1]] + 0.5 + GAP / 2, color="#cccccc", lw=1.2, zorder=0)
     ax.text(-0.01, -0.035, "phrasing", transform=ax.transAxes, ha="right", va="top", fontsize=13, color="#555555")
     save(fig, "which")
     note("which", lines)
@@ -306,7 +310,7 @@ def latex_to_mathtext(s):
     s = s.strip()
     s = re.sub(r"\\text\{([^{}]*)\}", lambda m: r"\mathrm{" + m.group(1).replace(" ", r"\ ") + "}", s)
     s = re.sub(r"\\boxed\{(.*)\}", r"\1", s)
-    s = s.replace(r"\left(", "(").replace(r"\right)", ")")
+    s = s.replace(r"\left(", "(").replace(r"\right)", ")").replace(r"\frac", r"\dfrac")  # full-size fractions
     if s.startswith(r"\[") and s.endswith(r"\]"):
         return "$" + s[2:-2].strip() + "$"
     return re.sub(r"\\\((.*?)\\\)", lambda m: "$" + m.group(1).strip() + "$", s.replace("$", r"\$"))
@@ -314,7 +318,7 @@ def latex_to_mathtext(s):
 
 def fig_famous():
     P = neutral_prompts()
-    fig = plt.figure(figsize=(WIDTH_IN, 7.6))
+    fig = plt.figure(figsize=(WIDTH_IN, 8.8))
     ax = fig.add_axes([0.08, 0.14, 0.33, 0.80])
     lines = []
     for j, (tag, name, col) in enumerate([("qwen3b", "3B", "#9fb6d8"), ("qwen7b", "7B", "#3b3b3b")]):
@@ -341,9 +345,15 @@ def fig_famous():
     y = 0.93
     shown = []
     hl = {"other": "#f6d7d7", "boxed": matplotlib.colors.to_rgba(COL["1/3"], 0.3)}
+    renderer = fig.canvas.get_renderer()
+
+    def below(t, pad):  # next y: under the rendered text (the pad leaves room for a highlight box)
+        bb = t.get_window_extent(renderer)
+        return tx.transData.inverted().transform((0, bb.y0))[1] - pad
+
     for li in RECALLED_LINES:
         if li is None:
-            tx.text(0.0, y, "…", fontsize=13, va="top", color="#888888"); y -= 0.034; continue
+            y = below(tx.text(0.0, y, "…", fontsize=13, va="top", color="#888888"), 0.006); continue
         mark = RECALLED_MARK.get(li)
         raw = ans[li].strip()
         if raw.startswith(r"\[") and " = " in raw:  # long display line: break at '=' signs, at most 2 '=' per row
@@ -357,8 +367,7 @@ def fig_famous():
         for sg in segs:
             kw = dict(bbox=dict(boxstyle="square,pad=0.2", fc=hl[mark], ec=COL["1/3"] if mark == "boxed" else "none")) if mark else {}
             is_math = sg.startswith("$") and sg.endswith("$") and sg.count("$") == 2
-            tx.text(0.02 if is_math else 0.0, y, sg, fontsize=14 if is_math else 12.5, va="top", **kw)
-            y -= 0.056 if is_math else 0.036
+            y = below(tx.text(0.02 if is_math else 0.0, y, sg, fontsize=12.5, va="top", **kw), 0.022 if mark else 0.008)
         shown.append(li)
     tx.text(0.0, y - 0.01, "red: the working computes 2/3     blue: the boxed answer is 1/3", fontsize=11, color="#555555", va="top")
     save(fig, "famous_number")
