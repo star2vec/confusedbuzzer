@@ -3,7 +3,7 @@
 ## header
 
 (a) endpoints at 90° and 237°; shaded arc 210°–330° (one third), 1/3 color
-(b) radius at 100°, point at 0.30 r; chord ends at 173° and 27° (at least 37° from every vertex); segment 0–0.5 r of the radius shaded, 1/2 color
+(b) radius at 270°, point at 0.20 r; chord ends at 348° and 192° (nearest vertex 18° away; radius 60° from every vertex); inner half of the radius (center to 0.5 r) drawn as a thicker line, 1/2 color
 (c) midpoint at 0.30 r, angle 85°; inner disk of radius r/2 filled, 1/4 color
 numbers under the panels: (a) 1/3, (b) 1/2, (c) 1/4
 

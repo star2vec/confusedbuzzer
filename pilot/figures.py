@@ -136,19 +136,20 @@ def fig_header():
     lines.append(f"(a) endpoints at {np.rad2deg(p) % 360:.0f}° and {np.rad2deg(q) % 360:.0f}°; shaded arc 210°–330° (one third), 1/3 color")
     # (b) full radius, inner half shaded along the line, point in that half, chord at right angles
     ax = axes[1]
-    th, dd = np.deg2rad(100), 0.3  # illustration: radius angle and point fixed so the chord's ends stay clear of the vertices
+    th, dd = np.deg2rad(270), 0.2  # illustration: radius pointing away from all three vertices, point inside the inner half
     u = np.array([np.cos(th), np.sin(th)]); v = np.array([-u[1], u[0]])
     ends = [th + np.arccos(dd), th - np.arccos(dd)]
+    away = min(abs((np.rad2deg(th - t) + 180) % 360 - 180) for t in tri)
     gap = min(abs((np.rad2deg(e - t) + 180) % 360 - 180) for e in ends for t in tri)
-    assert gap >= 30 and dd < 0.5, gap
-    ax.plot([0, 0.5 * u[0]], [0, 0.5 * u[1]], color=COL["1/2"], lw=8, alpha=0.55, solid_capstyle="butt", zorder=1)  # inner half
+    assert away >= 59.9 and dd < 0.5, away
     ax.plot([0, u[0]], [0, u[1]], color=GEO_INK, lw=GEO_LW, zorder=2)
+    ax.plot([0, 0.5 * u[0]], [0, 0.5 * u[1]], color=COL["1/2"], lw=3.6, solid_capstyle="butt", zorder=3)  # inner half: center to midpoint
     h = np.sqrt(1 - dd ** 2)
     c1, c2 = dd * u + h * v, dd * u - h * v
     ax.plot([c1[0], c2[0]], [c1[1], c2[1]], color=GEO_INK, lw=GEO_LW)
     dot(ax, dd * u)
     lines.append(f"(b) radius at {np.rad2deg(th):.0f}°, point at {dd:.2f} r; chord ends at {np.rad2deg(ends[0]) % 360:.0f}° and "
-                 f"{np.rad2deg(ends[1]) % 360:.0f}° (at least {gap:.0f}° from every vertex); segment 0–0.5 r of the radius shaded, 1/2 color")
+                 f"{np.rad2deg(ends[1]) % 360:.0f}° (nearest vertex {gap:.0f}° away; radius {away:.0f}° from every vertex); inner half of the radius (center to 0.5 r) drawn as a thicker line, 1/2 color")
     # (c) inner circle r/2 filled, random midpoint inside, its chord
     ax = axes[2]
     ax.add_patch(Circle((0, 0), 0.5, color=COL["1/4"], alpha=0.25, lw=0))
@@ -158,9 +159,8 @@ def fig_header():
     ax.plot([(m + h * v)[0], (m - h * v)[0]], [(m + h * v)[1], (m - h * v)[1]], color=GEO_INK, lw=GEO_LW)
     dot(ax, m)
     lines.append(f"(c) midpoint at {rr:.2f} r, angle {np.rad2deg(ph) % 360:.0f}°; inner disk of radius r/2 filled, 1/4 color")
-    for ax, lab, num in zip(axes, "abc", NUMS):
+    for ax, num in zip(axes, NUMS):
         dot(ax, (0, 0), size=4.5)  # center
-        ax.text(-1.1, 1.08, f"({lab})", fontsize=15, va="top", color=GEO_INK)
         ax.text(0.5, 0.03, num, transform=ax.transAxes, ha="center", va="top", fontsize=13, color=COL[num], fontweight="bold")
     rax = fig.add_axes([0.44, 0.02, 0.12, 0.27]); rax.set_aspect("equal"); rax.axis("off")
     rax.set_xlim(-0.9, 1.4); rax.set_ylim(-0.9, 1.0)
@@ -427,7 +427,7 @@ def fig_where():
     bx, by, bw = pos[("a", t)]
     ax.text(bx, by - box_h / 2 - 1.2, "branch word", fontsize=12, color=COL["1/2"], fontweight="bold", va="top")
     lx, ly, lw_ = pos[("a", 59)]
-    ax.text(1.0, by - row_h - 1.0, "grey boxes: the first 60 answer tokens (window probe)", fontsize=12, color="#555555", va="center")
+    ax.text(1.0, by - row_h - 1.0, "grey boxes: the first 60 answer tokens, used by the earlier probe", fontsize=12, color="#555555", va="center")
     ax.text(1.0, by - row_h - 6.0, "dots: 30, 10, 5 and 1 tokens before the branch word", fontsize=12, color="#555555", va="center")
     save(fig, "where_we_look")
     note("where we look", [f"7B phrasing {STRIP_EXAMPLE[0]} sample {STRIP_EXAMPLE[1]} (final number {m['final_number']}, derived); "
@@ -438,7 +438,7 @@ def fig_where():
                            f"over the {len(meta)} answers: token {median_t}"])
     CAPTIONS["where_we_look"] = (f"Where the probes look, on one real 7B answer (phrasing {STRIP_EXAMPLE[0]}, sample "
                                  f"{STRIP_EXAMPLE[1]}). Dashed: the end of the prompt; the last prompt token is the reading "
-                                 f"probe's position. Grey: the first 60 answer tokens averaged by the window probe. "
+                                 f"probe's position. Grey: the first 60 answer tokens, used by the earlier probe. "
                                  f"Highlighted: the first word that names the variable (the branch word, here at token {t}); "
                                  f"dots mark positions 30, 10, 5 and 1 tokens before it. This answer was chosen for fit; "
                                  f"the branch word usually comes around token {median_t}.")
@@ -476,7 +476,7 @@ def fig_when():
                         "first word that names the variable (positions equally spaced); y: balanced accuracy of a linear "
                         "probe for the final number (1/3, 1/2, 1/4), test phrasings unseen in training. Black: probe on the "
                         "residual stream at layer 22. Red: a classifier on the words alone. Grey: what shuffling labels "
-                        "within each phrasing reaches (95th percentile of 50 shuffles), the bar for reading more than the phrasing.")
+                        "within each phrasing reaches (95th percentile of 50 shuffles); a probe above this line reads more than the phrasing.")
 
 
 def main():

@@ -333,3 +333,11 @@ n per offset: 328, 333, 342, 342, 342, 342, 342
   - The robot has both eyebrows (one raised, one flat) and a margin below its head.
 - **which:** wider gaps between the threshold groups, and smaller radius sublabels.
 - **famous number:** the math is set at the prose size, with full-size fractions. Lines are spaced by their rendered height. The data drawn is unchanged.
+
+## 2026-10-10 — figures: header (b), panel labels, two captions
+
+- **header:**
+  - The (a)/(b)/(c) labels are removed.
+  - In (b), the radius points away from all three vertices: 270°, 60° from each. The point is at 0.20 r. The inner half of the radius, from the center to its midpoint at 0.5 r, is drawn as a thicker line in the 1/2 color. With the radius between two vertices and the point in the inner half, the chord ends cannot stay 30° from every vertex; here they are 18° from the nearest one.
+- **where we look:** the grey label and the caption now say "the first 60 answer tokens, used by the earlier probe".
+- **when:** the caption now ends with "a probe above this line reads more than the phrasing."
