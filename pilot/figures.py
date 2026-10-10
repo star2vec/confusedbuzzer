@@ -10,6 +10,7 @@ results/s1/judge_qwen{3b,7b}.jsonl, results/s2/word_probe_qwen7b.json, results/s
 """
 import json
 import random
+import re
 import textwrap
 from collections import Counter, defaultdict
 
@@ -18,7 +19,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
-from matplotlib.patches import Arc, Circle, FancyBboxPatch, Polygon, Rectangle, Wedge  # noqa: E402
+from matplotlib.patches import Circle, FancyBboxPatch, Polygon, Rectangle, Wedge  # noqa: E402
 
 from common import PROMPTS, RESULTS, chat_prompt, read_jsonl  # noqa: E402
 from score import score  # noqa: E402
@@ -30,12 +31,11 @@ COL = {"1/3": "#3b6fb6", "1/2": "#e08a2b", "1/4": "#3a9a5b", "other": "#9a9a9a"}
 APP2NUM = {"A": "1/3", "B": "1/2", "C": "1/4"}
 VAR2NUM = {"angle at the center": "1/3", "distance from the center": "1/2", "midpoint in the disk": "1/4"}
 VAR_SHORT = {"angle at the center": "angle", "distance from the center": "distance", "midpoint in the disk": "midpoint"}
-ACCENT = "#8a6bbd"  # header shading: deliberately not one of the number colors
 INK = "#222222"
 THR_ORDER = ["triangle", "rsqrt3", "numeric"]
 THR_LABEL = {"triangle": "triangle", "rsqrt3": "r√3", "numeric": "numeric"}
 RAD_ORDER = ["unspecified", "1", "2", "5"]
-RAD_LABEL = {"unspecified": "r", "1": "r=1", "2": "r=2", "5": "r=5"}
+RAD_LABEL = {"unspecified": "no r", "1": "r=1", "2": "r=2", "5": "r=5"}
 STRIP_EXAMPLE = (2, 7)  # 7B derived 1/2; first variable word at answer token 68 (chosen for fit; median is 110)
 RECALLED_EXAMPLE = (12, 26)  # 7B recalled 1/3: computes 2/3, boxes 1/3
 RECALLED_LINES = [0, None, 10, None, 18, None, 22, None, 26, 28, 29, None, 31]  # None = "…"
@@ -91,110 +91,110 @@ def judge(tag):
 
 
 # ---------------------------------------------------------------- 1 header
+GEO_LW = 1.2
+GEO_INK = "#1f3a5f"  # circle, chords, radius, robot
+GEO_TRI = "#c4c4c4"
+
+
+def dot(ax, xy, size=6.5, color=GEO_INK):
+    ax.plot([xy[0]], [xy[1]], "o", ms=size, mfc=color, mec="white", mew=1.0, zorder=6)
+
+
 def robot(ax, x0, y0, s):
-    """Puzzled line robot centered at (x0, y0), size s. Tilted head, uneven eyes and brows, wavy mouth, bent antenna."""
-    tilt = np.deg2rad(-10)
-    R = np.array([[np.cos(tilt), -np.sin(tilt)], [np.sin(tilt), np.cos(tilt)]])
-    T = lambda pts: (np.asarray(pts) * s) @ R.T + [x0, y0]
-    lw = 2.6
-    head = FancyBboxPatch((-0.5, -0.4), 1.0, 0.8, boxstyle="round,pad=0,rounding_size=0.22", fill=False, lw=lw, ec=INK)
-    head.set_transform(matplotlib.transforms.Affine2D().scale(s).rotate(tilt).translate(x0, y0) + ax.transData)
-    ax.add_patch(head)
-    for (ex, ey), r in [((-0.2, 0.08), 0.065), ((0.21, 0.06), 0.045)]:
-        c = T([ex, ey])
-        ax.add_patch(Circle(c, r * s, color=INK))
-    ax.plot(*T([[-0.32, 0.22], [-0.08, 0.30]]).T, color=INK, lw=lw, solid_capstyle="round")  # raised, slanted brow
-    ax.plot(*T([[0.1, 0.2], [0.32, 0.2]]).T, color=INK, lw=lw, solid_capstyle="round")  # flat brow
-    xm = np.linspace(-0.2, 0.2, 40)
-    ax.plot(*T(np.c_[xm, -0.2 + 0.035 * np.sin(xm * 40)]).T, color=INK, lw=lw, solid_capstyle="round")  # wavy mouth
-    ax.plot(*T([[0.0, 0.4], [0.03, 0.55], [0.14, 0.64]]).T, color=INK, lw=lw, solid_capstyle="round")  # bent antenna
-    ax.add_patch(Circle(T([0.14, 0.64]), 0.05 * s, fill=False, lw=lw, ec=INK))
-    ax.text(x0 + 0.85 * s, y0 + 0.15 * s, "?", fontsize=44, color=INK, ha="center", va="center", fontweight="bold")
+    """Small puzzled line robot: rounded square head, dot eyes, antenna with a ball, one raised eyebrow, short flat mouth."""
+    kw = dict(color=GEO_INK, lw=GEO_LW, solid_capstyle="round")
+    ax.add_patch(FancyBboxPatch((x0 - 0.5 * s, y0 - 0.5 * s), s, s, boxstyle=f"round,pad=0,rounding_size={0.22 * s}",
+                                fill=False, lw=GEO_LW, ec=GEO_INK))
+    for ex in (-0.2, 0.2):
+        ax.add_patch(Circle((x0 + ex * s, y0 + 0.05 * s), 0.055 * s, color=GEO_INK, lw=0))
+    ax.plot([x0 + 0.08 * s, x0 + 0.32 * s], [y0 + 0.22 * s, y0 + 0.30 * s], **kw)  # one raised eyebrow
+    ax.plot([x0 - 0.12 * s, x0 + 0.12 * s], [y0 - 0.24 * s, y0 - 0.24 * s], **kw)  # short flat mouth
+    ax.plot([x0, x0], [y0 + 0.5 * s, y0 + 0.75 * s], **kw)  # antenna
+    ax.add_patch(Circle((x0, y0 + 0.81 * s), 0.06 * s, fill=False, lw=GEO_LW, ec=GEO_INK))
+    ax.text(x0 + 0.85 * s, y0 + 0.1 * s, "?", fontsize=30, color=GEO_INK, ha="center", va="center", fontweight="light")
 
 
 def fig_header():
     rng = np.random.default_rng(3)
-    fig = plt.figure(figsize=(WIDTH_IN, WIDTH_IN / 3))
-    axes = [fig.add_axes([0.04 + i * 0.33, 0.30, 0.25, 0.68]) for i in range(3)]
+    fig = plt.figure(figsize=(WIDTH_IN, WIDTH_IN / 2.9))
+    axes = [fig.add_axes([0.05 + i * 0.33, 0.36, 0.24, 0.62]) for i in range(3)]
     tri = [np.deg2rad(90 + 120 * i) for i in range(3)]
     lines = []
-    for i, ax in enumerate(axes):
-        ax.set_aspect("equal"); ax.axis("off"); ax.set_xlim(-1.15, 1.15); ax.set_ylim(-1.15, 1.15)
-        ax.add_patch(Circle((0, 0), 1, fill=False, lw=2.2, ec=INK))
-        ax.add_patch(Polygon([[np.cos(a), np.sin(a)] for a in tri], closed=True, fill=False, lw=1.6, ec="#b5b5b5"))
-    # (a) endpoint at the top triangle vertex; favourable arc = the third opposite it
+    for ax in axes:
+        ax.set_aspect("equal"); ax.axis("off"); ax.set_xlim(-1.12, 1.12); ax.set_ylim(-1.12, 1.12)
+        ax.add_patch(Polygon([[np.cos(a), np.sin(a)] for a in tri], closed=True, fill=False, lw=GEO_LW, ec=GEO_TRI))
+        ax.add_patch(Circle((0, 0), 1, fill=False, lw=GEO_LW, ec=GEO_INK))
+    # (a) one endpoint at the top vertex; favourable arc = the third opposite it, shaded as a thin band inside the circle
     ax = axes[0]
     p = tri[0]
-    ax.add_patch(Arc((0, 0), 2, 2, theta1=np.rad2deg(p) + 120, theta2=np.rad2deg(p) + 240, lw=9, color=ACCENT, alpha=0.55))
+    ax.add_patch(Wedge((0, 0), 1.0, np.rad2deg(p) + 120, np.rad2deg(p) + 240, width=0.1, color=COL["1/3"], alpha=0.35, lw=0))
     q = p + np.deg2rad(rng.uniform(140, 220))
-    ax.plot([np.cos(p), np.cos(q)], [np.sin(p), np.sin(q)], color=INK, lw=2.4)
+    ax.plot([np.cos(p), np.cos(q)], [np.sin(p), np.sin(q)], color=GEO_INK, lw=GEO_LW)
     for a in (p, q):
-        ax.add_patch(Circle((np.cos(a), np.sin(a)), 0.05, color=INK, zorder=5))
-    lines.append(f"(a) endpoints at {np.rad2deg(p) % 360:.0f}° and {np.rad2deg(q) % 360:.0f}°; shaded arc 210°–330° (one third)")
-    # (b) random radius, inner half shaded, random point, perpendicular chord
+        dot(ax, (np.cos(a), np.sin(a)))
+    lines.append(f"(a) endpoints at {np.rad2deg(p) % 360:.0f}° and {np.rad2deg(q) % 360:.0f}°; shaded arc 210°–330° (one third), 1/3 color")
+    # (b) full radius, inner half shaded along the line, point in that half, chord at right angles
     ax = axes[1]
-    th = rng.uniform(0, 2 * np.pi)
-    u = np.array([np.cos(th), np.sin(th)])
-    ax.plot([0, u[0]], [0, u[1]], color="#777777", lw=1.6)
-    ax.plot([0, 0.5 * u[0]], [0, 0.5 * u[1]], color=ACCENT, lw=9, alpha=0.55, solid_capstyle="butt")
-    dd = rng.uniform(0.15, 0.45)
+    th = np.deg2rad(20)  # illustration: a fixed "random" radius that stays clear of the triangle
+    u = np.array([np.cos(th), np.sin(th)]); v = np.array([-u[1], u[0]])
+    band = 0.07
+    ax.add_patch(Polygon([band * v, 0.5 * u + band * v, 0.5 * u - band * v, -band * v], closed=True, color=COL["1/2"], alpha=0.5, lw=0))
+    ax.plot([0, u[0]], [0, u[1]], color=GEO_INK, lw=GEO_LW)
+    dd = rng.uniform(0.2, 0.45)
     h = np.sqrt(1 - dd ** 2)
-    v = np.array([-u[1], u[0]])
     c1, c2 = dd * u + h * v, dd * u - h * v
-    ax.plot([c1[0], c2[0]], [c1[1], c2[1]], color=INK, lw=2.4)
-    ax.add_patch(Circle(dd * u, 0.05, color=INK, zorder=5))
-    ax.add_patch(Circle((0, 0), 0.035, color="#777777"))
-    lines.append(f"(b) radius at {np.rad2deg(th) % 360:.0f}°, point at {dd:.2f} r; shaded inner half of the radius")
-    # (c) inner circle r/2 shaded, random midpoint inside, its chord
+    ax.plot([c1[0], c2[0]], [c1[1], c2[1]], color=GEO_INK, lw=GEO_LW)
+    dot(ax, dd * u)
+    lines.append(f"(b) radius at {np.rad2deg(th):.0f}°, point at {dd:.2f} r; inner half of the radius shaded, 1/2 color")
+    # (c) inner circle r/2 filled, random midpoint inside, its chord
     ax = axes[2]
-    ax.add_patch(Circle((0, 0), 0.5, color=ACCENT, alpha=0.30, lw=0))
-    ax.add_patch(Circle((0, 0), 0.5, fill=False, color=ACCENT, lw=1.6))
+    ax.add_patch(Circle((0, 0), 0.5, color=COL["1/4"], alpha=0.25, lw=0))
     rr, ph = 0.5 * np.sqrt(rng.uniform(0.1, 0.8)), rng.uniform(0, 2 * np.pi)
     m = rr * np.array([np.cos(ph), np.sin(ph)])
     u = m / np.linalg.norm(m); v = np.array([-u[1], u[0]]); h = np.sqrt(1 - rr ** 2)
-    ax.plot([(m + h * v)[0], (m - h * v)[0]], [(m + h * v)[1], (m - h * v)[1]], color=INK, lw=2.4)
-    ax.add_patch(Circle(m, 0.05, color=INK, zorder=5))
-    lines.append(f"(c) midpoint at {rr:.2f} r, angle {np.rad2deg(ph) % 360:.0f}°; shaded inner disk radius r/2")
-    for ax, lab in zip(axes, "abc"):
-        ax.text(-1.12, 1.08, f"({lab})", fontsize=17, va="top")
-    rax = fig.add_axes([0.40, 0.0, 0.20, 0.30]); rax.set_aspect("equal"); rax.axis("off")
-    rax.set_xlim(-1.4, 1.6); rax.set_ylim(-0.75, 0.95)
-    robot(rax, 0.0, 0.0, 1.0)
+    ax.plot([(m + h * v)[0], (m - h * v)[0]], [(m + h * v)[1], (m - h * v)[1]], color=GEO_INK, lw=GEO_LW)
+    dot(ax, m)
+    lines.append(f"(c) midpoint at {rr:.2f} r, angle {np.rad2deg(ph) % 360:.0f}°; inner disk of radius r/2 filled, 1/4 color")
+    for ax, lab, num in zip(axes, "abc", NUMS):
+        dot(ax, (0, 0), size=4.5)  # center
+        ax.text(-1.1, 1.08, f"({lab})", fontsize=15, va="top", color=GEO_INK)
+        ax.text(0.5, -0.07, num, transform=ax.transAxes, ha="center", va="top", fontsize=26, color=COL[num], fontweight="bold")
+    rax = fig.add_axes([0.44, 0.0, 0.12, 0.22]); rax.set_aspect("equal"); rax.axis("off")
+    rax.set_xlim(-0.9, 1.4); rax.set_ylim(-0.65, 1.0)
+    robot(rax, 0.0, 0.0, 0.9)
     save(fig, "header")
-    note("header", lines + ["No numbers drawn; favourable regions in one accent color (not a number color)."])
+    note("header", lines + ["numbers under the panels: (a) 1/3, (b) 1/2, (c) 1/4"])
     CAPTIONS["header"] = ("Three ways to draw a chord at random in the same circle, with the inscribed equilateral triangle: "
                           "(a) two random points on the circle, (b) a random point on a random radius, with the chord at right "
-                          "angles to it, (c) a random midpoint in the disk. The shaded part marks where the chord comes out "
-                          "longer than the triangle's side.")
+                          "angles to it, (c) a random midpoint in the disk. Shaded: where the chord comes out longer than the "
+                          "triangle's side. Each way gives a different probability.")
 
 
 # ---------------------------------------------------------------- 2 phrasings
 def fig_phrasings():
     P = neutral_prompts()
     rng = random.Random(0)
-    picks = rng.sample(range(1, 18), 2)
-    lab = [r for r in read_jsonl(PROMPTS / "labeled.jsonl")]
+    numeric = rng.choice([w for w in P if P[w]["threshold"] == "numeric"])
+    no_r = rng.choice([w for w in P if w != 0 and "radius" not in P[w]["text"]])
+    lab = [r for r in read_jsonl(PROMPTS / "labeled.jsonl") if r["wording_id"] == 0 and r["approach"] == "C"]
     L = rng.choice(lab)
-    clause = L["text"].replace(P[L["wording_id"]]["text"], "").strip()
-    boxes = [("canonical problem statement (id 0)", P[0]["text"], None),
-             (f"rephrasing, id {picks[0]}", P[picks[0]]["text"], None),
-             (f"rephrasing, id {picks[1]}", P[picks[1]]["text"], None),
-             (f"labeled prompt {L['id']} (approach {L['approach']}, {APP2NUM[L['approach']]})", L["text"], clause)]
-    fig = plt.figure(figsize=(WIDTH_IN, 9.0 * 0.80))
-    ax = fig.add_axes([0, 0, 1, 1]); ax.axis("off"); ax.set_xlim(0, 1); ax.set_ylim(0.20, 1)
+    clause = L["text"].replace(P[0]["text"], "").strip()
+    boxes = [("canonical problem statement", P[0]["text"], None),
+             (f"rephrasing {numeric}: numeric threshold", P[numeric]["text"], None),
+             (f"rephrasing {no_r}: no radius", P[no_r]["text"], None),
+             (f"canonical statement plus a clause for {APP2NUM[L['approach']]}", L["text"], clause)]
+    fig = plt.figure(figsize=(WIDTH_IN, 9.0 * 0.88))
+    ax = fig.add_axes([0, 0, 1, 1]); ax.axis("off"); ax.set_xlim(0, 1); ax.set_ylim(0.12, 1)
     y = 0.97
     width_chars = 78
     for head, text, hl in boxes:
         ax.text(0.04, y, head, fontsize=14, color="#555555", va="top", style="italic")
         y -= 0.04
         if hl is None:
-            wrapped = textwrap.wrap(text, width_chars)
-            spans = [(w, False) for w in wrapped]
+            spans = [(w, False) for w in textwrap.wrap(text, width_chars)]
         else:
             before, after = text.split(hl) if hl in text else (text, "")
-            spans = []
-            pre = textwrap.wrap(before.strip(), width_chars)
-            spans += [(w, False) for w in pre]
+            spans = [(w, False) for w in textwrap.wrap(before.strip(), width_chars)]
             spans += [(w, True) for w in textwrap.wrap(hl, width_chars)]
             spans += [(w, False) for w in textwrap.wrap(after.strip(), width_chars)]
         top = y + 0.012
@@ -205,12 +205,13 @@ def fig_phrasings():
         ax.add_patch(Rectangle((0.035, y + 0.012), 0.93, top - y - 0.006, fill=False, ec="#bbbbbb", lw=1.2))
         y -= 0.045
     save(fig, "phrasings")
-    note("phrasings", [f"canonical id 0; rephrasings ids {picks[0]}, {picks[1]} (random.Random(0)); labeled prompt {L['id']} "
-                       f"(approach {L['approach']}, description {L['desc_id']}, clause {L['position']} the problem)",
+    note("phrasings", [f"canonical id 0; rephrasings id {numeric} (numeric threshold) and id {no_r} (no radius), picked with "
+                       f"random.Random(0) within those groups; labeled prompt {L['id']} (approach {L['approach']}, description "
+                       f"{L['desc_id']}, clause {L['position']} the problem)",
                        f"highlighted clause: \"{clause}\""])
     CAPTIONS["phrasings"] = ("Prompts as the model sees them. Top: the canonical Bertrand problem statement and two of the 17 "
-                             "rephrasings (ids picked at random). Bottom: a labeled prompt, with the clause that states the "
-                             "approach highlighted.")
+                             "rephrasings, one stating the threshold as a number and one giving no radius. Bottom: the "
+                             "canonical statement plus a clause that states the approach for 1/4 (highlighted).")
 
 
 # ---------------------------------------------------------------- 3 which
@@ -253,7 +254,7 @@ def fig_which():
     note("which", lines)
     CAPTIONS["which"] = ("Which number each model gives on each phrasing of the neutral problem (30 samples per phrasing, "
                          "temperature 0.7, label = final number). Phrasings are grouped by how the threshold is stated "
-                         "(triangle side, r√3, or a number) and by radius (\"r\": radius not given).")
+                         "(triangle side, r√3, or a number) and by radius (\"no r\": radius not given).")
 
 
 # ---------------------------------------------------------------- 4 how
@@ -299,9 +300,21 @@ def fig_how():
 
 
 # ---------------------------------------------------------------- 5 famous number
+def latex_to_mathtext(s):
+    """Answer LaTeX -> matplotlib mathtext. Inline \\( \\) -> $ $, display \\[ \\] -> one $ $ block.
+    \\text{..} -> \\mathrm{..}, \\boxed{x} -> x (the box is drawn as a highlight)."""
+    s = s.strip()
+    s = re.sub(r"\\text\{([^{}]*)\}", lambda m: r"\mathrm{" + m.group(1).replace(" ", r"\ ") + "}", s)
+    s = re.sub(r"\\boxed\{(.*)\}", r"\1", s)
+    s = s.replace(r"\left(", "(").replace(r"\right)", ")")
+    if s.startswith(r"\[") and s.endswith(r"\]"):
+        return "$" + s[2:-2].strip() + "$"
+    return re.sub(r"\\\((.*?)\\\)", lambda m: "$" + m.group(1).strip() + "$", s.replace("$", r"\$"))
+
+
 def fig_famous():
     P = neutral_prompts()
-    fig = plt.figure(figsize=(WIDTH_IN, 6.4))
+    fig = plt.figure(figsize=(WIDTH_IN, 7.6))
     ax = fig.add_axes([0.08, 0.14, 0.33, 0.80])
     lines = []
     for j, (tag, name, col) in enumerate([("qwen3b", "3B", "#9fb6d8"), ("qwen7b", "7B", "#3b3b3b")]):
@@ -319,7 +332,7 @@ def fig_famous():
     ax.set_ylim(0, 115); ax.set_yticks([0, 25, 50, 75, 100]); ax.set_ylabel("derived share (%)")
     ax.set_xlabel("threshold phrasing")
     ax.legend(loc="upper left", frameon=False, ncol=2)
-    # right: one recalled 1/3
+    # right: one recalled 1/3, math rendered
     rows = {(r["wording_id"], r["sample"]): r for r in read_jsonl(RESULTS / "s1" / "neutral_qwen7b.jsonl") if r.get("kind") == "answer"}
     ans = rows[RECALLED_EXAMPLE]["answer"].split("\n")
     tx = fig.add_axes([0.46, 0.02, 0.53, 0.96]); tx.axis("off"); tx.set_xlim(0, 1); tx.set_ylim(0, 1)
@@ -327,24 +340,30 @@ def fig_famous():
             color="#555555", va="top", style="italic")
     y = 0.93
     shown = []
+    hl = {"other": "#f6d7d7", "boxed": matplotlib.colors.to_rgba(COL["1/3"], 0.3)}
     for li in RECALLED_LINES:
         if li is None:
-            tx.text(0.0, y, "…", fontsize=11, family="monospace", va="top", color="#888888"); y -= 0.038; continue
+            tx.text(0.0, y, "…", fontsize=13, va="top", color="#888888"); y -= 0.034; continue
         mark = RECALLED_MARK.get(li)
-        wrapped = textwrap.wrap(ans[li], 56) or [""]
-        for w in wrapped:
-            kw = {}
-            if mark == "other":
-                kw = dict(bbox=dict(boxstyle="square,pad=0.12", fc="#f6d7d7", ec="none"))
-            elif mark == "boxed":
-                kw = dict(bbox=dict(boxstyle="square,pad=0.12", fc=matplotlib.colors.to_rgba(COL["1/3"], 0.3), ec="none"))
-            tx.text(0.0, y, esc(w), fontsize=11, family="monospace", va="top", **kw)
-            y -= 0.038
+        raw = ans[li].strip()
+        if raw.startswith(r"\[") and " = " in raw:  # long display line: break at '=' signs, at most 2 '=' per row
+            body = raw[2:-2].strip().split(" = ")
+            parts = [" = ".join(body[:2])] + ["= " + " = ".join(body[k:k + 2]) for k in range(2, len(body), 2)]
+            segs = [latex_to_mathtext(r"\[" + p_ + r"\]") for p_ in parts]
+        elif raw.startswith(r"\["):
+            segs = [latex_to_mathtext(raw)]
+        else:
+            segs = textwrap.wrap(latex_to_mathtext(raw), 58)
+        for sg in segs:
+            kw = dict(bbox=dict(boxstyle="square,pad=0.2", fc=hl[mark], ec=COL["1/3"] if mark == "boxed" else "none")) if mark else {}
+            is_math = sg.startswith("$") and sg.endswith("$") and sg.count("$") == 2
+            tx.text(0.02 if is_math else 0.0, y, sg, fontsize=14 if is_math else 12.5, va="top", **kw)
+            y -= 0.056 if is_math else 0.036
         shown.append(li)
     tx.text(0.0, y - 0.01, "red: the working computes 2/3     blue: the boxed answer is 1/3", fontsize=11, color="#555555", va="top")
     save(fig, "famous_number")
-    lines.append(f"right panel: 7B phrasing {RECALLED_EXAMPLE[0]} sample {RECALLED_EXAMPLE[1]}, answer lines {shown}; "
-                 f"highlighted line 26 (computes 2/3) and line 29 (boxed 1/3)")
+    lines.append(f"right panel: 7B phrasing {RECALLED_EXAMPLE[0]} sample {RECALLED_EXAMPLE[1]}, answer lines {shown}, math "
+                 f"rendered with mathtext; highlighted line 26 (computes 2/3) and line 29 (boxed 1/3)")
     note("famous number", lines)
     CAPTIONS["famous_number"] = ("Left: share of hand-judged answers whose steps actually produce their number, by how the "
                                  "threshold is phrased. Right: a recalled 1/3 from the 7B (real answer, lines removed where "
@@ -363,57 +382,57 @@ def fig_where():
     p_ids = tok(chat_prompt(tok, m["prompt"]), add_special_tokens=False).input_ids
     t = m["word_tok"]
     w_end = t + len(tok(" " + m["word_match"], add_special_tokens=False).input_ids)  # tokens of the branch word
+    median_t = int(np.median([r["word_tok"] for r in meta.values()]))
     toks = [("p", i, tok.decode([p_ids[i]])) for i in range(len(p_ids) - 4, len(p_ids))]
     toks += [("a", i, tok.decode([a_ids[i]])) for i in range(0, min(w_end + 3, len(a_ids)))]
-    fig = plt.figure(figsize=(WIDTH_IN, 7.4 * 0.70))
-    ax = fig.add_axes([0.01, 0.01, 0.98, 0.98]); ax.axis("off"); ax.set_xlim(0, 100); ax.set_ylim(30, 100)
-    x, y, row_h, cw = 1.0, 88.0, 12.0, 1.02
+    marks = {t - k: k for k in (30, 10, 5, 1)}
+    fig = plt.figure(figsize=(WIDTH_IN, 6.6))
+    ax = fig.add_axes([0.01, 0.01, 0.98, 0.98]); ax.axis("off"); ax.set_xlim(0, 100); ax.set_ylim(0, 100)
+    x, y, row_h, cw, box_h = 1.0, 84.0, 15.0, 1.02, 6.4
     pos = {}
     for kind, i, s in toks:
         disp = s.replace("\n", "↵").replace(" ", "·") if s.strip() == "" else s.replace("\n", "↵")
         w = max(2.2, cw * len(disp) + 1.0)
         if x + w > 99:
             x, y = 1.0, y - row_h
-        fc = "#f2f2f2" if kind == "p" else "white"
-        if kind == "a" and t <= i < w_end:
-            fc = matplotlib.colors.to_rgba(COL["1/2"], 0.45)
-        ax.add_patch(Rectangle((x, y - 3.2), w - 0.3, 6.4, fc=fc, ec="#c8c8c8", lw=0.8))
-        ax.text(x + (w - 0.3) / 2, y, esc(disp), ha="center", va="center", fontsize=11.5, family="DejaVu Sans")
+        if kind == "p":
+            fc, ec, ls = "white", "#9a9a9a", "--"
+        elif t <= i < w_end:
+            fc, ec, ls = matplotlib.colors.to_rgba(COL["1/2"], 0.45), "#c8c8c8", "-"
+        elif i < 60:
+            fc, ec, ls = "#e4e4e4", "#c8c8c8", "-"
+        else:
+            fc, ec, ls = "white", "#c8c8c8", "-"
+        ax.add_patch(Rectangle((x, y - box_h / 2), w - 0.3, box_h, fc=fc, ec=ec, lw=0.8, ls=ls))
+        ax.text(x + (w - 0.3) / 2, y, esc(disp), ha="center", va="center", fontsize=11.5, family="DejaVu Sans",
+                color="#666666" if kind == "p" else INK)
+        if kind == "a" and i in marks:  # small labeled dot directly above the box
+            cx = x + (w - 0.3) / 2
+            ax.plot([cx], [y + box_h / 2 + 1.6], "o", ms=5, color=INK)
+            ax.text(cx, y + box_h / 2 + 2.8, str(marks[i]), ha="center", va="bottom", fontsize=11.5, fontweight="bold")
         pos[(kind, i)] = (x, y, w - 0.3)
         x += w
     lp = pos[("p", len(p_ids) - 1)]
-    ax.annotate("last prompt token", xy=(lp[0] + lp[2] / 2, lp[1] + 3.3), xytext=(lp[0] + lp[2] / 2 + 6, lp[1] + 8.5),
-                fontsize=12, arrowprops=dict(arrowstyle="->", color=INK), ha="left")
-    # first-60 bracket: per row segments under tokens 0..59
-    segs = defaultdict(list)
-    for i in range(60):
-        px, py, pw = pos[("a", i)]
-        segs[py].append((px, px + pw))
-    for py, ss in segs.items():
-        x0, x1 = min(s[0] for s in ss), max(s[1] for s in ss)
-        ax.plot([x0, x1], [py - 4.4, py - 4.4], color="#555555", lw=2.2)
-        ax.plot([x0, x0], [py - 4.4, py - 3.6], color="#555555", lw=2.2)
-        ax.plot([x1, x1], [py - 4.4, py - 3.6], color="#555555", lw=2.2)
-    last_py = min(segs)
-    ax.text(max(s[1] for s in segs[last_py]) + 1, last_py - 5.2, "first 60 answer tokens", fontsize=12, color="#555555", va="center")
-    for k in (30, 10, 5, 1):
-        px, py, pw = pos[("a", t - k)]
-        ax.plot([px + pw / 2, px + pw / 2], [py + 3.3, py + 4.8], color=INK, lw=1.8)
-        ax.text(px + pw / 2, py + 5.0, str(k), ha="center", va="bottom", fontsize=12, fontweight="bold")
+    ax.annotate("prompt (dashed); last prompt token", xy=(lp[0] + lp[2] / 2, lp[1] + box_h / 2), xytext=(lp[0] + 3, lp[1] + 9.5),
+                fontsize=12, arrowprops=dict(arrowstyle="->", color=INK), ha="left", color="#555555")
     bx, by, bw = pos[("a", t)]
-    ax.text(bx, by - 6.0, "branch word", fontsize=12, color=COL["1/2"], fontweight="bold", va="top")
+    ax.text(bx, by - box_h / 2 - 1.2, "branch word", fontsize=12, color=COL["1/2"], fontweight="bold", va="top")
+    lx, ly, lw_ = pos[("a", 59)]
+    ax.text(1.0, by - row_h - 1.0, "grey boxes: the first 60 answer tokens (window probe)", fontsize=12, color="#555555", va="center")
+    ax.text(1.0, by - row_h - 6.0, "dots: 30, 10, 5 and 1 tokens before the branch word", fontsize=12, color="#555555", va="center")
     save(fig, "where_we_look")
     note("where we look", [f"7B phrasing {STRIP_EXAMPLE[0]} sample {STRIP_EXAMPLE[1]} (final number {m['final_number']}, derived); "
                            f"prompt {len(p_ids)} tokens, last 4 shown; answer tokens 0–{min(w_end + 3, len(a_ids)) - 1} shown; "
-                           f"branch word \"{m['word_match']}\" at answer token {t} (tokens {t}–{w_end - 1}); "
-                           f"ticks at answer tokens {t - 30}, {t - 10}, {t - 5}, {t - 1}; first-60 bracket over tokens 0–59",
-                           "median branch-word position over the 342 answers: token 110"])
+                           f"first 60 answer tokens (0–59) shaded grey; branch word \"{m['word_match']}\" (tokens {t}–{w_end - 1}); "
+                           f"dots at answer tokens {t - 30}, {t - 10}, {t - 5}, {t - 1}",
+                           f"for the caption: branch word of this answer at answer token {t}; median branch-word position "
+                           f"over the {len(meta)} answers: token {median_t}"])
     CAPTIONS["where_we_look"] = (f"Where the probes look, on one real 7B answer (phrasing {STRIP_EXAMPLE[0]}, sample "
-                                 f"{STRIP_EXAMPLE[1]}). Grey: the end of the prompt; the last prompt token is the reading "
-                                 f"probe's position. Bracket: the first 60 answer tokens averaged by the window probe. "
+                                 f"{STRIP_EXAMPLE[1]}). Dashed: the end of the prompt; the last prompt token is the reading "
+                                 f"probe's position. Grey: the first 60 answer tokens averaged by the window probe. "
                                  f"Highlighted: the first word that names the variable (the branch word, here at token {t}); "
-                                 f"ticks mark positions 30, 10, 5 and 1 tokens before it. This answer was chosen for fit; "
-                                 f"the branch word usually comes around token 110.")
+                                 f"dots mark positions 30, 10, 5 and 1 tokens before it. This answer was chosen for fit; "
+                                 f"the branch word usually comes around token {median_t}.")
 
 
 # ---------------------------------------------------------------- 7 when
@@ -425,29 +444,30 @@ def fig_when():
     words = [100 * W["words"][str(k)]["prompt_plus_answer_text"]["bal"] for k in ks]
     within = [100 * W["best_rerun"][str(k)]["null_within"]["bal_p95"] for k in ks]
     assert W["best_layer"] == 22
+    xs = np.arange(len(ks))  # equal spacing; labels are the offsets
     fig, ax = plt.subplots(figsize=(WIDTH_IN, 6.0))
     fig.subplots_adjust(left=0.1, right=0.97, top=0.97, bottom=0.14)
-    ax.plot(ks, probe, "-o", color=INK, lw=3, ms=8, label="probe on the residual stream (layer 22)")
-    ax.plot(ks, words, "-s", color="#c0504d", lw=2.4, ms=7, label="words only (prompt + answer text so far)")
-    ax.plot(ks, within, "-^", color="#7f7f7f", lw=2.4, ms=7, label="labels shuffled within phrasing, 95th pct")
+    ax.plot(xs, probe, "-o", color=INK, lw=3, ms=8, label="probe on the residual stream (layer 22)")
+    ax.plot(xs, words, "-s", color="#c0504d", lw=2.4, ms=7, label="words only (prompt + answer text so far)")
+    ax.plot(xs, within, "-^", color="#7f7f7f", lw=2.4, ms=7, label="labels shuffled within phrasing, 95th pct")
     ax.axhline(100 / 3, ls="--", color="#999999", lw=1.6)
-    ax.text(29.5, 34.5, "chance 33%", color="#777777", fontsize=13)
-    ax.set_xlim(31, -1); ax.set_xticks(ks)
+    ax.text(0.0, 34.5, "chance 33%", color="#777777", fontsize=13)
+    ax.set_xticks(xs); ax.set_xticklabels([str(k) for k in ks]); ax.set_xlim(-0.4, len(ks) - 0.6)
     ax.set_ylim(25, 90)
     ax.set_xlabel("tokens before the branch word")
     ax.set_ylabel("balanced accuracy (%)")
     ax.legend(loc="upper left", frameon=False)
     save(fig, "when")
-    note("when", [f"x (tokens before the branch word): {ks}",
+    note("when", [f"x (tokens before the branch word, equally spaced): {ks}",
                   "probe, layer 22, balanced accuracy (%): " + ", ".join(f"{v:.1f}" for v in probe),
                   "words only, prompt + answer text up to that point (%): " + ", ".join(f"{v:.1f}" for v in words),
                   "within-phrasing shuffle, 95th percentile, 50 shuffles (%): " + ", ".join(f"{v:.1f}" for v in within),
                   "chance: 33.3%", f"n per offset: " + ", ".join(str(W['curves']['main'][str(k)][L]['n']) for k in ks)])
     CAPTIONS["when"] = ("When the final number becomes readable in the 7B's answer. x: position, in tokens before the "
-                        "first word that names the variable; y: balanced accuracy of a linear probe for the final number "
-                        "(1/3, 1/2, 1/4), test phrasings unseen in training. Black: probe on the residual stream at layer 22. "
-                        "Red: a classifier on the words alone. Grey: what shuffling labels within each phrasing reaches "
-                        "(95th percentile of 50 shuffles), the bar for reading more than the phrasing.")
+                        "first word that names the variable (positions equally spaced); y: balanced accuracy of a linear "
+                        "probe for the final number (1/3, 1/2, 1/4), test phrasings unseen in training. Black: probe on the "
+                        "residual stream at layer 22. Red: a classifier on the words alone. Grey: what shuffling labels "
+                        "within each phrasing reaches (95th percentile of 50 shuffles), the bar for reading more than the phrasing.")
 
 
 def main():

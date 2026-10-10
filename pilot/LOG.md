@@ -271,3 +271,55 @@ within-phrasing shuffle, 95th percentile, 50 shuffles (%): 40.6, 40.5, 46.4, 46.
 chance: 33.3%
 n per offset: 328, 333, 342, 342, 342, 342, 342
 
+
+## 2026-10-10 — figures revised
+
+- **header:** redrawn in a thin geometry style. All strokes are 1.2 pt, with the circle and chords in one dark blue and the triangle in light grey. Points are small dots with a white edge, and the center is marked.
+  - (a) The favourable arc is shaded in the 1/3 color.
+  - (b) The full radius is drawn, with its inner half shaded in the 1/2 color.
+  - (c) The inner circle is filled in the 1/4 color.
+  - Each panel has its number under it.
+  - The robot is redrawn in the same thin stroke. It has no tilt; its puzzled look comes from one raised eyebrow and a short flat mouth, with a light "?".
+- **which:** the group with no radius given is labeled "no r".
+- **famous number:** the math in the excerpt is rendered with mathtext. Both highlights are kept: the step that computes 2/3, and the boxed 1/3.
+- **where we look:** the brackets are gone. The first 60 answer tokens are shaded grey, labeled once. Dots with labels sit above the tokens 30, 10, 5 and 1 before the branch word, and the rows are spaced further apart.
+- **when:** the seven x positions are now equally spaced.
+- **phrasings:** the two rephrasings are now id 16 (numeric threshold) and id 6 (no radius in the text). The labeled prompt is now labeled "canonical statement plus a clause for 1/4".
+- Numbers for the changed figures, from `results/figures/numbers.md`:
+
+### header
+
+(a) endpoints at 90° and 237°; shaded arc 210°–330° (one third), 1/3 color
+(b) radius at 20°, point at 0.26 r; inner half of the radius shaded, 1/2 color
+(c) midpoint at 0.41 r, angle 210°; inner disk of radius r/2 filled, 1/4 color
+numbers under the panels: (a) 1/3, (b) 1/2, (c) 1/4
+
+### phrasings
+
+canonical id 0; rephrasings id 16 (numeric threshold) and id 6 (no radius), picked with random.Random(0) within those groups; labeled prompt w00_c0 (approach C, description c0, clause after the problem)
+highlighted clause: "In this problem, "at random" means choosing a point uniformly at random inside the disk and taking the chord whose midpoint is that point."
+
+### famous number
+
+3B triangle: derived 52/141 = 37%
+3B r√3: derived 95/145 = 66%
+3B numeric: derived 53/75 = 71%
+7B triangle: derived 108/136 = 79%
+7B r√3: derived 150/172 = 87%
+7B numeric: derived 84/92 = 91%
+right panel: 7B phrasing 12 sample 26, answer lines [0, 10, 18, 22, 26, 28, 29, 31], math rendered with mathtext; highlighted line 26 (computes 2/3) and line 29 (boxed 1/3)
+
+### where we look
+
+7B phrasing 2 sample 7 (final number 1/2, derived); prompt 56 tokens, last 4 shown; answer tokens 0–72 shown; first 60 answer tokens (0–59) shaded grey; branch word "perpendicular distance" (tokens 68–69); dots at answer tokens 38, 58, 63, 67
+for the caption: branch word of this answer at answer token 68; median branch-word position over the 342 answers: token 110
+
+### when
+
+x (tokens before the branch word, equally spaced): [30, 20, 10, 5, 2, 1, 0]
+probe, layer 22, balanced accuracy (%): 40.1, 47.9, 52.6, 57.2, 69.7, 74.6, 79.2
+words only, prompt + answer text up to that point (%): 40.1, 48.8, 47.3, 46.1, 58.1, 59.2, 71.6
+within-phrasing shuffle, 95th percentile, 50 shuffles (%): 40.6, 40.5, 46.4, 46.9, 48.5, 47.8, 51.9
+chance: 33.3%
+n per offset: 328, 333, 342, 342, 342, 342, 342
+
